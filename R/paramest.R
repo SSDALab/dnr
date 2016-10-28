@@ -1,39 +1,3 @@
-#'@title paramest
-#'@author Abhirup Mallik
-#'@examples
-##' library(network)
-##' library(sna)
-##' library(ergm)
-##' library(arm)
-##' library(glmnet)
-##' ### library(dynamicNet)
-##' ### load("Data/rdNets.rda")
-##' input_network=rdNets[1:6]
-##' model.terms=c("triadcensus.003", "triadcensus.012", "triadcensus.102", "triadcensus.021D", "gwesp");
-##' model.formula = net~triadcensus(0:3)+gwesp(alpha=0, fixed=FALSE, cutoff=30)-1;
-##' graph_mode='digraph';
-##' group='dnc';
-##' alpha.glmnet=1
-##' directed=TRUE;
-##' method <- 'bayesglm'
-##' maxlag <- 3
-##' lambda=NA
-##' intercept = c("edges")
-##' cdim <- length(model.terms)
-##' lagmat <- matrix(sample(c(0,1),(maxlag+1)*cdim,replace = T),ncol = cdim)
-##' ylag <- rep(1,maxlag)
-##' exvar <- NA
-##' out <- paramest(input_network,model.terms, model.formula,
-##'                 graph_mode='digraph',group,intercept = c("edges"),exvar=NA,
-##'                 maxlag = 3,
-##'                 lagmat = matrix(sample(c(0,1),(maxlag+1)*cdim,
-##'                                        replace = T),ncol = cdim),
-##'                 ylag = rep(1,maxlag),
-##'                 lambda = NA, method='glmnet',
-##'                 alpha.glmnet=1)
-
-
-
 ##' .. content for \description{} (no empty lines) ..
 ##'
 ##' .. content for \details{} ..
@@ -52,8 +16,12 @@
 ##' @param method Regression method, default is 'bayesglm'
 ##' @param alpha.glmnet if regularization is used. not needed for bayesglm.
 ##' @param paramout TRUE by default. if parameters are needed.
-##' @return 
+##' @return list with elements:
+##'   coef: coefficients
+##'   mplematfull: full martix of change statistics
+##'   mplemat: subset of matrix of change statistics
 ##' @author Abhirup
+##' @examples 
 ##' input_network=rdNets[1:6]
 ##' model.terms=c("triadcensus.003", "triadcensus.012", "triadcensus.102", "triadcensus.021D", "gwesp");
 ##' model.formula = net~triadcensus(0:3)+gwesp(alpha=0, fixed=FALSE, cutoff=30)-1;
@@ -77,6 +45,7 @@
 ##'                 ylag = rep(1,maxlag),
 ##'                 lambda = NA, method='glmnet',
 ##'                 alpha.glmnet=1)
+##' @export
 
 paramest <- function(input_network,model.terms, model.formula,
                      graph_mode='digraph',group,intercept = c("edges"),exvar=NA,
