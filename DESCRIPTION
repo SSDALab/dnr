@@ -1,0 +1,17 @@
+Package: dnr
+Title: SIMULATE DYNAMIC NETWORKS USING ERGM FAMILY
+Version: 0.0.1
+Authors@R: person("Abhirup", "Mallik", email = "malli066@umn.edu",
+                  role = c("aut", "cre"),
+		  "Zack", "Almquist", email = "almquist@umn.edu",
+		  role = c("aut", "cre"))
+Description: Functions are provided to fit temporal lag models to dynamic
+	     networks. The models are build on top of ERGM framework. There are
+	     functions for simulating or forecasting networks for future time points.
+Depends: R (>= 3.1.0)
+License: GPL-3
+LazyData: true
+Imports:
+  ergm
+  network
+  sna
