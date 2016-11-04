@@ -17,6 +17,22 @@
 ##' @param alpha.glmnet NA
 ##' @param paramout T/F parameter estimation is returned.
 ##' @param Theta = prior probability matrix.
+##' @examples 
+##' out.bayes <- engine_bayes(start_network=startNet,
+##' inputcoeff=inputcoeff,
+##' ns=ns,
+##' model.terms=model.terms,
+##' model.formula=model.formula,
+##' graph_mode=graph_mode,
+##' group=group,intercept=intercept,
+##' exvar=exvar,
+##' maxlag=maxlag,
+##' lagmat=lagmat,
+##' ylag=ylag,
+##' lambda = NA, method='bayesglm',
+##' alpha.glmnet=alpha.glmnet,
+##' Theta = Theta)
+##' @export
 engine_bayes <- function(start_network,inputcoeff,ns,
                          model.terms, model.formula,
                          graph_mode,group,intercept,

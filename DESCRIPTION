@@ -16,4 +16,6 @@ Imports:
     ergm,
     network,
     sna
+Suggests:
+    testthat
 RoxygenNote: 5.0.1
