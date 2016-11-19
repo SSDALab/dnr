@@ -17,7 +17,42 @@
 ##' @param alpha.glmnet NA
 ##' @param paramout T/F parameter estimation is returned.
 ##' @param Theta = prior probability matrix.
-##' @examples 
+##' @examples
+##' startNet <- rdNets[1:50]
+##' model.terms=c("triadcensus.003", "triadcensus.012", "triadcensus.102", "triadcensus.021D", "gwesp")
+##' model.formula = net~triadcensus(0:3)+gwesp(alpha=0, fixed=FALSE, cutoff=30)-1
+##' graph_mode <- 'digraph'
+##' group <- 'dnc'
+##' alpha.glmnet <- 1
+##' method <- 'bayesglm'
+##' maxlag <- 3
+##' lambda <- NA
+##' intercept <- "edges"
+##' cdim <- length(model.terms)
+##' lagmat <- matrix(sample(c(0,1),(maxlag+1)*cdim,replace = T),ncol = cdim)
+##' ylag <- rep(1,maxlag)
+##' lagmat[1,] <- rep(0,ncol(lagmat))
+##' 
+##' out.coef <- paramest(input_network = startNet,
+##'                 model.terms = model.terms,
+##'                 model.formula = model.formula,
+##'                 graph_mode='digraph',
+##'                 group=group,intercept = intercept,
+##'                 exvar=NA,
+##'                 maxlag = maxlag,
+##'                 lagmat = lagmat,
+##'                 ylag = ylag,
+##'                 lambda = NA, method='bayesglm',
+##'                 alpha.glmnet=1)
+##' 
+##' 
+##' inputcoeff <- out.coef$coef$coef.edge
+##' nvertex <- 47 ##find vertex here
+##' ns <- 1
+##' exvar <- NA
+##' for(i in seq_along(startNet)) Theta <- Theta + startNet[[i]][,]
+##' Theta <- Theta/length(startNet)
+##' Theta <- thresh(Theta)
 ##' out.bayes <- engine_bayes(start_network=startNet,
 ##' inputcoeff=inputcoeff,
 ##' ns=ns,
@@ -74,7 +109,7 @@ engine_bayes <- function(start_network,inputcoeff,ns,
     X_t <- ungvectorize(inputpred,nvertex,graph_mode)
     Pobs <- ilogit(X_t)
     alpha.prior <- Theta/(1-Theta)
-    P.post <- (Pobs + alpha.prior/ncount)/(alpha.prior/Theta + 1)
+    P.post <- (Pobs + alpha.prior)/(alpha.prior/Theta + 1)
     net.current %n% "X" <- logit(P.post)
     net.current <- simulate(ergm(net.current ~ edgecov("X")))
     out_network[[ncount]] <- net.current

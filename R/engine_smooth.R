@@ -37,7 +37,7 @@
 ##' ylag <- rep(1,maxlag)
 ##' lagmat[1,] <- rep(0,ncol(lagmat))
 ##' out <- paramest(input_network,model.terms, model.formula,
-##'                 graph_mode='digraph',group,intercept = c("edges"),exvar=NA,
+##'                 graph_mode="digraph",group,intercept = c("edges"),exvar=NA,
 ##'                 maxlag = 3,
 ##'                 lagmat = lagmat,
 ##'                 ylag = rep(1,maxlag),
