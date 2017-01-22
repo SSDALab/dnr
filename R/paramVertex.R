@@ -80,9 +80,13 @@ paramVertex <- function(InputNetwork,
 
     ## Remove networks that are of size 0.
     rmNAnetworks <- function(netlist){
-        netlens <- lapply(netlist, network.size.1)
+        netlens <- unlist(lapply(netlist, network.size.1))
         toremove <- which(netlens < 1)
-        return(netlist[-toremove])
+        if(length(toremove) > 0) {
+            return(netlist[-toremove])
+        } else {
+            return(netlist)
+        }
     }
 
     network.vertex.names.1 <- function(x) {
@@ -241,6 +245,7 @@ paramVertex <- function(InputNetwork,
 
             ## add vertex attributes
             vatbs <- network::list.vertex.attributes(net.window[[i]])
+            vatbs <- vatbs[vatbs != "vertex.names"]
             for (vatb in vatbs){
                 vatbsCommon <- numeric(length(Vunion.window))
                 vatbsCommon[adjLagIdx] <- network::get.vertex.attribute(net.window[[i]], vatb)
@@ -384,6 +389,9 @@ paramVertex <- function(InputNetwork,
 
     ## section 2: edge conditional on vertex:
     matout <- NULL
+    fullPredictorStack0 <- NULL
+    fullPredictorStack1 <- NULL
+    fullPredictorStackNA <- NULL
     if(is.na(EdgeGroup)){
         grouping.edgecov <- NA
     } else{
@@ -417,7 +425,7 @@ paramVertex <- function(InputNetwork,
         }
                                         #fit model terms
                                         #Comment: We always count down!
-        if(!is.na(model.formula)){
+        if(sum(is.na(model.formula)) == 0){
             for(j in maxLag:1){
                 formula <- genformula(model.formula,netname = "common.window[[j]]")
                 mplemat.tmp  <-  ergmMPLE(formula, output="matrix");
@@ -446,7 +454,31 @@ paramVertex <- function(InputNetwork,
             y <- gvectorize(net.current[,],mode=gmoded, censor.as.na=FALSE)
             mat <- data.frame(cbind(y,csmodel))
         }
+
+        ## imputed matrix1: with 0
+        ## create empty matrix of 0 of full dim. (length(Vunion)).
+        ## num of rows: num of edges. num of cols: cols in mat.
+        ncolXY <- ncol(mat)
+        nEdges <- ifelse(gmode == "digraph", nv*(nv-1), nv*(nv-1)/2)
+        fullPredictor0 <- matrix(0, nEdges, ncolXY)
+        fullPredictor1 <- matrix(1, nEdges, ncolXY)
+        fullPredictorNA <- matrix(NA, nEdges,ncolXY)
+        ## get indicators of vertices present out of Vunion
+        vnames.window <- network.vertex.names(net.current)
+        vind <- match(vnames.window, Vunion)
+        ##vind <- na.omit(vind)
+        AdjMatUnion <- matrix(0, nrow = nv, ncol = nv)
+        AdjMatUnion[vind, vind] <- 1
+        misPattern <- na.omit(gvectorize(AdjMatUnion, mode = gmode))
+        subId <- which(misPattern == 1)
+        fullPredictor0[subId, ] <- as.matrix(mat)
+        fullPredictor1[subId, ] <- as.matrix(mat)
+        fullPredictorNA[subId, ] <- as.matrix(mat)
+        
         matout <- rbind(matout,mat)
+        fullPredictorStack0 <- rbind(fullPredictorStack0, fullPredictor0)
+        fullPredictorStack1 <- rbind(fullPredictorStack1, fullPredictor1)
+        fullPredictorStackNA <- rbind(fullPredictorStackNA, fullPredictorNA)
     }
 
     ## subsetting
@@ -463,6 +495,9 @@ paramVertex <- function(InputNetwork,
     return(list(EdgeCoef=out,
                 Edgemplematfull=matout,
                 Edgemplemat=matout[,lagvec],
+                EdgePredictor0 = fullPredictorStack0,
+                EdgePredictor1 = fullPredictorStack1,
+                EdgePredictorNA = fullPredictorStackNA,
                 VertexCoef = VertexRegout,
                 Vstats = XYdata[, VertexLagvec]))
 }
