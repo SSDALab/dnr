@@ -1,2 +1,2 @@
-library(testthat)
-test_check("dnr")
+##library(testthat)
+## test_check("dnr")

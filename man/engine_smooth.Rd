@@ -62,11 +62,11 @@ maxlag <- 3
 lambda=NA
 intercept = c("edges")
 cdim <- length(model.terms)
-lagmat <- matrix(sample(c(0,1),(maxlag+1)*cdim,replace = T),ncol = cdim)
+lagmat <- matrix(sample(c(0,1),(maxlag+1)*cdim,replace = TRUE),ncol = cdim)
 ylag <- rep(1,maxlag)
 lagmat[1,] <- rep(0,ncol(lagmat))
 out <- paramest(input_network,model.terms, model.formula,
-                graph_mode='digraph',group,intercept = c("edges"),exvar=NA,
+                graph_mode="digraph",group,intercept = c("edges"),exvar=NA,
                 maxlag = 3,
                 lagmat = lagmat,
                 ylag = rep(1,maxlag),
@@ -87,6 +87,7 @@ tmp <- engine_smooth(start_network=start_network,inputcoeff=inputcoeff,ns=ns,
                      ylag=ylag,
                      lambda = NA, method='bayesglm',
                      alpha.glmnet=alpha.glmnet)
+
 }
 \author{
 Abhirup

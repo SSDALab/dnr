@@ -1,10 +1,9 @@
-##' .. content for \description{} (no empty lines) ..
-##'
-##' .. content for \details{} ..
+##' Simulation engine for dynamic vertex case.
 ##' @title Simulation Engine for dynamic Vertex case.
 ##' @param InputNetwork List of input networks
 ##' @param numSim number of time points to simulate
 ##' @param maxLag maximum Lag
+##' @param VertexStatsvec Binary vector for vertex model.
 ##' @param VertexLag vector of lag for vertex
 ##' @param VertexLagMatrix matrix of lags for vertex stats.
 ##' @param EdgeModelTerms Edge Model terms
@@ -20,16 +19,8 @@
 ##' SimNetwork: Output Networks
 ##' EdgeParameterMat: Matrix of edge parameter
 ##' VertexParameterMat: Matrix of Vertex parameters.
+##' @export
 ##'@examples
-##' InputNetwork <- beach
-##' numSim <- 2
-##' maxLag <- 3
-##' EdgeModelTerms <- c("triadcensus.003", "triadcensus.012", "triadcensus.102",
-##'                     "triadcensus.021D")
-##' EdgeModelFormula <- net ~ triadcensus(0:3)
-##' VertexLagMatrix <-  matrix(1, maxLag,
-##'                            length(VertexStatsvec))
-##' 
 ##' ## test function:
 ##' simResult <- engineVertex(InputNetwork = beach,
 ##'                           numSim = 5,
@@ -38,12 +29,13 @@
 ##'                                              "triadcensus.012",
 ##'                                              "triadcensus.102",
 ##'                                              "triadcensus.021D"),
-##'                           EdgeModelFormula = net ~ triadcensus(0:3),
+##'                           EdgeModelFormula = net ~ triadcensus(0:3)
 ##'                           )
 ##' @author Abhirup
 engineVertex <- function(InputNetwork,
                           numSim,
                           maxLag,
+                          VertexStatsvec = rep(1, nvertstats),
                           VertexLag = rep(1, maxLag),
                           VertexLagMatrix = matrix(1, maxLag,
                                                    length(VertexStatsvec)),
@@ -66,6 +58,12 @@ engineVertex <- function(InputNetwork,
     simulatedNetworks <- list()
     EdgeParameters <- list()
     VertexParameters <- list()
+    
+    isdirected <- network::get.network.attribute(InputNetwork[[1]], "directed")
+    if(isdirected) {
+      gmode <- "digraph"
+    } else gmode <- "graph"
+    
     
     for(simcount in seq_len(numSim)){
         print(simcount)
@@ -102,14 +100,14 @@ engineVertex <- function(InputNetwork,
         ## construct the empty networks with vertices give by
         
         ## Predict the edges
-        InputMPLEmat <- as.matrix(out$EdgePredictor0[, -1])
+        InputMPLEmat <- as.matrix(Out.param$EdgePredictor0[, -1])
         nEdges <- ifelse(gmode == "digraph", nv*(nv -1), nv*(nv - 1)/2)
         repfac <- netlength - maxLag
         smmpleMat <- matrix(0, nEdges, ncol(InputMPLEmat))
         for(i in seq_len(repfac)){
             smmpleMat <- smmpleMat + InputMPLEmat[(((i-1)*nEdges+1):(i*nEdges)), ]
         }
-        EdgeCoef <- out$EdgeCoef$coef.edge
+        EdgeCoef <- Out.param$EdgeCoef$coef.edge
         smmpleMat <- smmpleMat/repfac
         inputPred <- smmpleMat %*% EdgeCoef
         ## create an empty full sized network

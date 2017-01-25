@@ -32,7 +32,7 @@ logkCycle <- function(z, gmode) {
 }
 
 vertexstats <- function(z, gmode){
-    if(!is.network(z)) {
+    if(!network::is.network(z)) {
         if(is.na(z)) return (NULL)
     } else if(sum(c(z[ , ])) == 0) {
         return (NULL)
@@ -46,3 +46,4 @@ vertexstats <- function(z, gmode){
     }
     return(out)
 }
+nvertstats <- 8

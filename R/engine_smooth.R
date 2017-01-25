@@ -20,6 +20,7 @@
 ##'   out_network: list of predicted networks
 ##'   coefmat: if paramout is TRUE, matrix of coefficients at all time.
 ##' @author Abhirup
+##' @export
 ##' @examples 
 ##' input_network=rdNets[1:6];
 ##' model.terms=c("triadcensus.003", "triadcensus.012", "triadcensus.102", "triadcensus.021D", "gwesp");
@@ -33,7 +34,7 @@
 ##' lambda=NA
 ##' intercept = c("edges")
 ##' cdim <- length(model.terms)
-##' lagmat <- matrix(sample(c(0,1),(maxlag+1)*cdim,replace = T),ncol = cdim)
+##' lagmat <- matrix(sample(c(0,1),(maxlag+1)*cdim,replace = TRUE),ncol = cdim)
 ##' ylag <- rep(1,maxlag)
 ##' lagmat[1,] <- rep(0,ncol(lagmat))
 ##' out <- paramest(input_network,model.terms, model.formula,
@@ -58,7 +59,7 @@
 ##'                      ylag=ylag,
 ##'                      lambda = NA, method='bayesglm',
 ##'                      alpha.glmnet=alpha.glmnet)
-##' @export
+##' 
 
 engine_smooth <- function(start_network,inputcoeff,ns,
                           model.terms, model.formula,

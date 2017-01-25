@@ -1,7 +1,5 @@
-##' .. content for \description{} (no empty lines) ..
-##'
-##' .. content for \details{} ..
-##' @title paramest
+##' @title Parameter estimation for static vertex case.
+##' @description Parameter estimation for the static vertex case.
 ##' @param input_network Input network.
 ##' @param model.terms model terms, must be ERGM terms expanded.
 ##' @param model.formula ERGM formula for each time point.
@@ -21,6 +19,7 @@
 ##'   mplematfull: full martix of change statistics
 ##'   mplemat: subset of matrix of change statistics
 ##' @author Abhirup
+##' @export
 ##' @examples 
 ##' input_network=rdNets[1:6]
 ##' model.terms=c("triadcensus.003", "triadcensus.012", "triadcensus.102", "triadcensus.021D", "gwesp");
@@ -34,18 +33,18 @@
 ##' lambda=NA
 ##' intercept = c("edges")
 ##' cdim <- length(model.terms)
-##' lagmat <- matrix(sample(c(0,1),(maxlag+1)*cdim,replace = T),ncol = cdim)
+##' lagmat <- matrix(sample(c(0,1),(maxlag+1)*cdim,replace = TRUE),ncol = cdim)
 ##' ylag <- rep(1,maxlag)
 ##' exvar <- NA
 ##' out <- paramest(input_network,model.terms, model.formula,
 ##'                 graph_mode='digraph',group,intercept = c("edges"),exvar=NA,
 ##'                 maxlag = 3,
 ##'                 lagmat = matrix(sample(c(0,1),(maxlag+1)*cdim,
-##'                                        replace = T),ncol = cdim),
+##'                                        replace = TRUE),ncol = cdim),
 ##'                 ylag = rep(1,maxlag),
-##'                 lambda = NA, method='glmnet',
+##'                 lambda = NA, method='bayesglm',
 ##'                 alpha.glmnet=1)
-##' @export
+##' 
 
 paramest <- function(input_network,model.terms, model.formula,
                      graph_mode='digraph',group,intercept = c("edges"),exvar=NA,
@@ -58,14 +57,7 @@ paramest <- function(input_network,model.terms, model.formula,
                      lambda = NA, method='glmnet',
                      alpha.glmnet=1,paramout=TRUE){
 
-  #'Grouping term generator function
-  #'@title gengroup
-  #'@description: Generates the grouping terms from the formula group variable input by the user.
-  #'@param input_network
-  #'@param group: vector of strings, indicating grouping variables.
-  #'@param net1: current network
-  #'@return a vector of characters, that should be appended (+) at the begining of a formula to feed into ergm
-  #'
+
 
   gengroup <- function(input_network,group,net1){
     Vmax = input_network;
@@ -152,14 +144,7 @@ paramest <- function(input_network,model.terms, model.formula,
 
   ########## End of gengroup ####
 
-  #grouping.edgecov <- gengroup(input_network,group)
 
-  #'Generate formula for feeding into ergm
-  #'@title genformula1
-  #'@param model.formula: user given formula
-  #'@param netname: left side network name to be used. For now, I use "net1"
-  #'@return formula to be fed to ergm
-  #'
 
   genformula1 <- function(model.formula,grouping.edgecov,netname="net1"){
     term_formula = terms(model.formula);
@@ -168,13 +153,7 @@ paramest <- function(input_network,model.terms, model.formula,
     return(formula1)
   }
 
-  #'Generate Intercept
-  #'@title genintercept
-  #'@param intercept: intercept vector
-  #'@param grouping.edgecov: grouping terms from gengroup
-  #'@param netname: name of the network
-  #'@return formula for just the intercept, to be fed to ergm
-  #'
+
   genintercept <- function(intercept,grouping.edgecov,netname){
     if(is.na(grouping.edgecov)||is.na(intercept)){
       if(is.na(grouping.edgecov)){
@@ -188,12 +167,6 @@ paramest <- function(input_network,model.terms, model.formula,
     return(formula)
   }
 
-  #'Generate formula for feeding into ergm
-  #'@title genformula
-  #'@param model.formula: user given formula
-  #'@param netname: left side network name to be used. For now, I use "net1"
-  #'@return formula to be fed to ergm
-  #'
 
   genformula <- function(model.formula,netname="net1"){
     term_formula = terms(model.formula);
@@ -204,12 +177,6 @@ paramest <- function(input_network,model.terms, model.formula,
     return(formula1)
   }
 
-  #' Exclude a term from the model terms
-  #' @title excterm
-  #' @param model.terms
-  #' @param exterm: string, the term to be excluded. For now I am using 'logsize'
-  #' @return model.terms.new
-  #'
 
   excterm <- function(model.terms,exterm = 'logsize'){
     find.logsize = grep(exterm,model.terms);
@@ -221,12 +188,6 @@ paramest <- function(input_network,model.terms, model.formula,
     return(model.terms.new)
   }
 
-  #' Exclude a term from the formula
-  #' @title excform
-  #' @param model.formula
-  #' @param exterm: string, the term to be excluded. For now I am using 'logsize'
-  #' @return term_formula.new
-  #' TODO: should support lagmatrix, and model.formula.new output?
 
   excform <- function(model.formula,exterm = 'logsize'){
     term_formula <- terms(model.formula)
@@ -250,23 +211,15 @@ paramest <- function(input_network,model.terms, model.formula,
 
   ####### End of Formula manipulation ####
 
-  ### Parameter estimation from change statistics ##
-  #'@title edgecoeff
-  #'@param output.edge
-  #'@param method: one of 'glmnet', 'glm' or 'bayesglm'
-  #'@return list with elements:
-  #'        coef.edge: matrix of coeff vector for each edge
-  #'        lambda: lambda
-  #'        std.err
 
-  edgecoeff <- function(output.edge,method='glmnet'){
+  edgecoeff <- function(output.edge,method='bayesglm'){
     if(method == 'glmnet'){
       if(is.na(lambda)){
-        blogfit.select.edge = cv.glmnet(data.matrix(output.edge[,-1]),as.vector(output.edge[,1]), family="binomial", alpha=alpha.glmnet)
+        blogfit.select.edge = glmnet::cv.glmnet(data.matrix(output.edge[,-1]),as.vector(output.edge[,1]), family="binomial", alpha=alpha.glmnet)
         lambda = blogfit.select.edge$lambda.min
       }
 
-      blogfit.sim.edge = glmnet(data.matrix(output.edge[,-1]),as.vector(output.edge[,1]),family="binomial", alpha=alpha.glmnet, lambda=lambda, intercept=F);
+      blogfit.sim.edge = glmnet::glmnet(data.matrix(output.edge[,-1]),as.vector(output.edge[,1]),family="binomial", alpha=alpha.glmnet, lambda=lambda, intercept=F);
 
       coef.edge=setNames(as.vector(blogfit.sim.edge$beta), colnames(output.edge)[-1]);
 
@@ -280,7 +233,7 @@ paramest <- function(input_network,model.terms, model.formula,
       return(list(coef.edge=coef.edge, lambda=NA, std.error=summary(blogfit.sim.edge)$coefficients[,2]))
 
     } else if (method == 'bayesglm'){
-      blogfit.sim.edge = bayesglm(y~.-1, data= output.edge,family=binomial(logit));
+      blogfit.sim.edge = arm::bayesglm(y~.-1, data= output.edge,family=binomial(logit));
 
       coef.edge=setNames(as.vector(blogfit.sim.edge$coefficients), colnames(output.edge)[-1]);
       ## set NA to 0
@@ -356,15 +309,15 @@ paramest <- function(input_network,model.terms, model.formula,
       }
       lagnames <- rep("lag",(k-1))
       for (j in (k-1):1){
-        lagstats[,j] <- gvectorize(net.window[[j]][,],mode=graph_mode, censor.as.na=F)
+        lagstats[,j] <- sna::gvectorize(net.window[[j]][,],mode=graph_mode, censor.as.na=F)
         lagnames[j] <- paste("lag",j,sep = "")
       }
       colnames(lagstats) <- lagnames
       #response
-      y <- gvectorize(net.current[,],mode=graph_mode, censor.as.na=FALSE)
+      y <- sna::gvectorize(net.current[,],mode=graph_mode, censor.as.na=FALSE)
       mat <- data.frame(cbind(y,csmodel,lagstats))
     } else {
-      y <- gvectorize(net.current[,],mode=graph_mode, censor.as.na=FALSE)
+      y <- sna::gvectorize(net.current[,],mode=graph_mode, censor.as.na=FALSE)
       mat <- data.frame(cbind(y,csmodel))
     }
     matout <- rbind(matout,mat)

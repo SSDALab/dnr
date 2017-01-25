@@ -1,7 +1,5 @@
-##' .. content for \description{} (no empty lines) ..
-##' 
-##' .. content for \details{} ..
 ##' @title Parameter estimation for Vertex dynamics
+##' @description Parameter estimation fro dynamic vertex case. The interface remaining almost identical to the static vertex one.
 ##' @param InputNetwork list of networks.
 ##' @param VertexStatsvec binary vector of size 8.
 ##' @param maxLag maximum lag, numeric.
@@ -24,34 +22,15 @@
 ##' Vstats: Vertex statistics matrix.
 ##' @author Abhirup
 ##' @examples
-##' InputNetwork <- beach
-##' maxLag <- 3
-##' regMethod <- "bayesglm"
-##' 
-##' lagVector <- rep(1, maxLag)
-##' EdgeModelTerms <- c("triadcensus.003", "triadcensus.012", "triadcensus.102",
-##'                     "triadcensus.021D")
-##' EdgeModelFormula <- net ~ triadcensus(0:3)
-##' EdgeGroup <- "group1"
-##' EdgeIntercept <- c("edges")
-##' EdgeExvar <- NA
-##' EdgeLag <- rep(1, maxLag)
-##' 
-##' EdgeLagMatrix <- rbind(c(1, 1, 0, 1),
-##'                        c(0, 0, 1, 1),
-##'                        c(1, 0, 0, 0))
-##' VertexLag <- c(1, 1, 0)
-##' VertexLagMatrix <-  matrix(1, maxLag,
-##'                            length(VertexStatsvec))
-##' 
 ##' out <- paramVertex(InputNetwork = beach,
-##'                    maxLag = 3,
-##'                    VertexLag = VertexLag,
-##'                    EdgeModelTerms = c("triadcensus.003", "triadcensus.012", "triadcensus.102","triadcensus.021D"),
-##'                    EdgeModelFormula = net ~ triadcensus(0:3),
-##'                    EdgeGroup = "group1",
-##'                    EdgeIntercept = c("edges"),
-##'                    paramout = TRUE)
+##'      maxLag = 3,
+##'      EdgeModelTerms = c("triadcensus.003", "triadcensus.012",
+##'       "triadcensus.102","triadcensus.021D"),
+##'      EdgeModelFormula = net ~ triadcensus(0:3),
+##'      EdgeGroup = "group1",
+##'      EdgeIntercept = c("edges"),
+##'      paramout = TRUE)
+##' @export
 
 paramVertex <- function(InputNetwork,
                         VertexStatsvec = rep(1, 8),
@@ -70,32 +49,6 @@ paramVertex <- function(InputNetwork,
                         regMethod = "bayesglm",
                         paramout = FALSE){
     ## Section 1: Vertex model
-    ## supporting functions:
-    ## network size (that allows NA)
-    network.size.1 <- function(x){
-        if(!is.network(x)){
-            if(is.na(x)) return(0)
-        } else return(network.size(x))
-    }
-
-    ## Remove networks that are of size 0.
-    rmNAnetworks <- function(netlist){
-        netlens <- unlist(lapply(netlist, network.size.1))
-        toremove <- which(netlens < 1)
-        if(length(toremove) > 0) {
-            return(netlist[-toremove])
-        } else {
-            return(netlist)
-        }
-    }
-
-    network.vertex.names.1 <- function(x) {
-        if(!is.network(x)){
-            if(is.na(x)) return (NA)
-        } else {
-            return (network.vertex.names(x))
-        }
-    }
     
     ## regression
     ## TODO: add options for models with intercept (regression without -1)
@@ -121,7 +74,7 @@ paramVertex <- function(InputNetwork,
             return(list(coef.edge=coef.edge, lambda=NA, std.error=summary(blogfit.sim.edge)$coefficients[,2]))
 
         } else if (method == 'bayesglm'){
-            blogfit.sim.edge = bayesglm(y~.-1, data= output.edge,family=binomial(logit));
+            blogfit.sim.edge = arm::bayesglm(y~.-1, data= output.edge,family=binomial(logit));
 
             coef.edge=setNames(as.vector(blogfit.sim.edge$coefficients), colnames(output.edge)[-1]);
             ## set NA to 0
@@ -130,17 +83,6 @@ paramVertex <- function(InputNetwork,
         }
     }
 
-    ## supporting functions for edge case:
-
-    ## Grouping term generator function
-    #'Grouping term generator function
-    #'@title gengroup
-    #'@description: Generates the grouping terms from the formula group variable input by the user.
-    #'@param input_network
-    #'@param group: vector of strings, indicating grouping variables.
-    #'@param net1: current network
-    #'@return a vector of characters, that should be appended (+) at the begining of a formula to feed into ergm
-    #'
 
     gengroup <- function(input_network,group,net1){
         Vmax = input_network;
@@ -157,8 +99,8 @@ paramVertex <- function(InputNetwork,
             grouping = Vmax.label
         }
         grouping.sub = grouping[foo.index]
-
-        if(directed){
+        dirTF <- network::get.network.attribute(input_network[[i]], "directed")
+        if(dirTF){
             grouping.perm = expand.grid(unique(grouping.sub),unique(grouping.sub))
             grouping.perm$indicator = seq_along(grouping.perm[,1])
 
@@ -266,13 +208,7 @@ paramVertex <- function(InputNetwork,
     }
 
 
-    #'Generate Intercept
-    #'@title genintercept
-    #'@param intercept: intercept vector
-    #'@param grouping.edgecov: grouping terms from gengroup
-    #'@param netname: name of the network
-    #'@return formula for just the intercept, to be fed to ergm
-    #'
+
     genintercept <- function(intercept,grouping.edgecov,netname){
         if(is.na(grouping.edgecov)||is.na(intercept)){
             if(is.na(grouping.edgecov)){
@@ -315,7 +251,7 @@ paramVertex <- function(InputNetwork,
     ## is the network directed?
     ## we are using 1st network as representative network hoping these
     ## attributes wont change.
-    isdirected <- get.network.attribute(InputNetwork[[1]], "directed")
+    isdirected <- network::get.network.attribute(InputNetwork[[1]], "directed")
     if(isdirected) {
         gmode <- "digraph"
     } else gmode <- "graph"
@@ -395,7 +331,7 @@ paramVertex <- function(InputNetwork,
     if(is.na(EdgeGroup)){
         grouping.edgecov <- NA
     } else{
-        grouping.edgecov <- gengroup(InputNetowrk, EdgeGroup, InputNetwork[[1]])
+        grouping.edgecov <- gengroup(InputNetwork, EdgeGroup, InputNetwork[[1]])
     }
 
     for(i in 1:(netlength - maxLag)){
@@ -418,17 +354,17 @@ paramVertex <- function(InputNetwork,
             if(!is.na(EdgeExvar)){
                 formula <- as.formula(paste(c(formula,paste0("edgecov(",exvar,")",sep="")),collapse = "+"))
             }
-            mplemat  <-  ergmMPLE(formula, output="matrix")
+            mplemat  <-  ergm::ergmMPLE(formula, output="matrix")
             csintercept <- as.matrix(mplemat$predictor[,1:(ncol(mplemat$predictor)-1)])
             colnames(csintercept) <- colnames(mplemat$predictor)[1:(ncol(mplemat$predictor)-1)]
             csmodel <- csintercept
         }
                                         #fit model terms
                                         #Comment: We always count down!
-        if(sum(is.na(model.formula)) == 0){
+        if(sum(is.na(EdgeModelFormula)) == 0){
             for(j in maxLag:1){
-                formula <- genformula(model.formula,netname = "common.window[[j]]")
-                mplemat.tmp  <-  ergmMPLE(formula, output="matrix");
+                formula <- genformula(EdgeModelFormula,netname = "common.window[[j]]")
+                mplemat.tmp  <-  ergm::ergmMPLE(formula, output="matrix");
                 edgeLag.tmp <- mplemat.tmp$predictor[,1:(ncol(mplemat.tmp$predictor)-1)]
                 csmodel <- cbind(csmodel, edgeLag.tmp);
             }
@@ -443,15 +379,15 @@ paramVertex <- function(InputNetwork,
             }
             lagnames <- rep("lag",(maxLag))
             for (j in (maxLag):1){
-                lagstats[,j] <- gvectorize(common.window[[j]][,],mode=gmode, censor.as.na=F)
+                lagstats[,j] <- sna::gvectorize(common.window[[j]][,],mode=gmode, censor.as.na=F)
                 lagnames[j] <- paste("lag",j,sep = "")
             }
             colnames(lagstats) <- lagnames
                                         #response
-            y <- gvectorize(net.current[,],mode=gmode, censor.as.na=FALSE)
+            y <- sna::gvectorize(net.current[,],mode=gmode, censor.as.na=FALSE)
             mat <- data.frame(cbind(y,csmodel,lagstats))
         } else {
-            y <- gvectorize(net.current[,],mode=gmoded, censor.as.na=FALSE)
+            y <- sna::gvectorize(net.current[,],mode=gmoded, censor.as.na=FALSE)
             mat <- data.frame(cbind(y,csmodel))
         }
 
@@ -469,7 +405,7 @@ paramVertex <- function(InputNetwork,
         ##vind <- na.omit(vind)
         AdjMatUnion <- matrix(0, nrow = nv, ncol = nv)
         AdjMatUnion[vind, vind] <- 1
-        misPattern <- na.omit(gvectorize(AdjMatUnion, mode = gmode))
+        misPattern <- na.omit(sna::gvectorize(AdjMatUnion, mode = gmode))
         subId <- which(misPattern == 1)
         fullPredictor0[subId, ] <- as.matrix(mat)
         fullPredictor1[subId, ] <- as.matrix(mat)

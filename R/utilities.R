@@ -1,3 +1,4 @@
+
 ungvectorize <- function(x,nvertex,gmode){
   if(gmode == "digraph"){
     out <- diag(nvertex)
@@ -5,9 +6,18 @@ ungvectorize <- function(x,nvertex,gmode){
     tmp[tmp==0] <- x
     out <- matrix(tmp,nvertex)
     diag(out) <- 0
+  } else{
+    out <- diag(nvertex)
+    tmp <- c(out)
+    tmpid <- c(lower.tri(out))
+    tmp[tmpid] <- x
+    out <- matrix(tmp, nvertex)
+    out[upper.tri(out)] <- t(out)[upper.tri(out)]
+    diag(out) <- 0
   }
   out
 }
+
 
 #'binaryPlot
 #' @title binaryPlot
@@ -69,3 +79,29 @@ thresh <- function(x, hi = 0.95, lo = 0.05) {
     x <- ifelse(x<lo, lo, x)
 }
 
+## supporting functions:
+## network size (that allows NA)
+network.size.1 <- function(x){
+  if(!network::is.network(x)){
+    if(is.na(x)) return(0)
+  } else return(network::network.size(x))
+}
+
+## Remove networks that are of size 0.
+rmNAnetworks <- function(netlist){
+  netlens <- unlist(lapply(netlist, network.size.1))
+  toremove <- which(netlens < 1)
+  if(length(toremove) > 0) {
+    return(netlist[-toremove])
+  } else {
+    return(netlist)
+  }
+}
+
+network.vertex.names.1 <- function(x) {
+  if(!network::is.network(x)){
+    if(is.na(x)) return (NA)
+  } else {
+    return (network::network.vertex.names(x))
+  }
+}

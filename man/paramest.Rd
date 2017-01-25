@@ -2,7 +2,7 @@
 % Please edit documentation in R/paramest.R
 \name{paramest}
 \alias{paramest}
-\title{paramest}
+\title{Parameter estimation for static vertex case.}
 \usage{
 paramest(input_network, model.terms, model.formula, graph_mode = "digraph",
   group, intercept = c("edges"), exvar = NA, maxlag = 3,
@@ -39,27 +39,15 @@ paramest(input_network, model.terms, model.formula, graph_mode = "digraph",
 
 \item{paramout}{TRUE by default. if parameters are needed.}
 
-\item{group:}{vector of strings, indicating grouping variables.}
-
-\item{net1:}{current network}
-
-\item{model.formula:}{user given formula}
-
-\item{netname:}{left side network name to be used. For now, I use "net1"}
-
-\item{intercept:}{intercept vector}
-
-\item{grouping.edgecov:}{grouping terms from gengroup}
-
-\item{netname:}{name of the network}
-
-\item{model.formula:}{user given formula}
-
-\item{netname:}{left side network name to be used. For now, I use "net1"}
+\item{model.terms}{model terms vector.}
 
 \item{exterm:}{string, the term to be excluded. For now I am using 'logsize'}
 
+\item{model.formula}{model formula in ergm.}
+
 \item{exterm:}{string, the term to be excluded. For now I am using 'logsize'}
+
+\item{output.edge}{XY matrix for estimation.}
 
 \item{method:}{one of 'glmnet', 'glm' or 'bayesglm'}
 }
@@ -68,22 +56,6 @@ list with elements:
   coef: coefficients
   mplematfull: full martix of change statistics
   mplemat: subset of matrix of change statistics
-
-a vector of characters, that should be appended (+) at the begining of a formula to feed into ergm
-
-Generate formula for feeding into ergm
-
-formula to be fed to ergm
-
-Generate Intercept
-
-formula for just the intercept, to be fed to ergm
-
-Generate formula for feeding into ergm
-
-formula to be fed to ergm
-
-Exclude a term from the model terms
 
 model.terms.new
 
@@ -98,12 +70,7 @@ list with elements:
        std.err
 }
 \description{
-: Generates the grouping terms from the formula group variable input by the user.
-}
-\details{
-.. content for \description{} (no empty lines) ..
-
-.. content for \details{} ..
+Parameter estimation for the static vertex case.
 }
 \examples{
 input_network=rdNets[1:6]
@@ -118,16 +85,16 @@ maxlag <- 3
 lambda=NA
 intercept = c("edges")
 cdim <- length(model.terms)
-lagmat <- matrix(sample(c(0,1),(maxlag+1)*cdim,replace = T),ncol = cdim)
+lagmat <- matrix(sample(c(0,1),(maxlag+1)*cdim,replace = TRUE),ncol = cdim)
 ylag <- rep(1,maxlag)
 exvar <- NA
 out <- paramest(input_network,model.terms, model.formula,
                 graph_mode='digraph',group,intercept = c("edges"),exvar=NA,
                 maxlag = 3,
                 lagmat = matrix(sample(c(0,1),(maxlag+1)*cdim,
-                                       replace = T),ncol = cdim),
+                                       replace = TRUE),ncol = cdim),
                 ylag = rep(1,maxlag),
-                lambda = NA, method='glmnet',
+                lambda = NA, method='bayesglm',
                 alpha.glmnet=1)
 }
 \author{
