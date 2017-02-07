@@ -4,8 +4,9 @@
 ##' @param regIntercept Logical. Should intercept be included in the model? 
 ##' @param lambda for method "glmnet".
 ##' @param alpha for "glmnet"
-##' @return list with elements: coef, se, lambda. (Coefficients, SE, lambda, if used)
+##' @return list with elements: coef, se, lambda, fit (Coefficients, SE, lambda, if used, fit object.)
 ##' @author Abhirup
+
 regEngine <- function(XYdata,
                       method = "bayesglm",
                       regIntercept = FALSE,
@@ -31,7 +32,8 @@ regEngine <- function(XYdata,
         mSE <- NA
         out <- list(coef = mCoef,
                     se = mSE,
-                    lambda = lambda)
+                    lambda = lambda,
+                    fit = mFit)
     } else if (method == "glm") {
         if(regIntercept){
             mFit <- glm(y ~ ., data = XYdata,
@@ -54,7 +56,8 @@ regEngine <- function(XYdata,
         }
         out <- list(coef = mCoef,
                     se = mSE,
-                    lambda = lambda)
+                    lambda = lambda,
+                    fit = mFit)
     } else if(method == "bayesglm"){
         if(regIntercept) {
             mFit <- arm::bayesglm(y ~., data = XYdata,
@@ -77,10 +80,13 @@ regEngine <- function(XYdata,
         }
         out <- list(coef = mCoef,
                     se = mSE,
-                    lambda = lambda)
+                    lambda = lambda,
+                    fit = mFit)
     }
     return(out)
 }
+
+
 
 
 ungvectorize <- function(x,nvertex,gmode){

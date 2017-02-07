@@ -19,7 +19,7 @@ regEngine(XYdata, method = "bayesglm", regIntercept = FALSE, lambda = NA,
 \item{alpha}{for "glmnet"}
 }
 \value{
-list with elements: coef, se, lambda. (Coefficients, SE, lambda, if used)
+list with elements: coef, se, lambda, fit (Coefficients, SE, lambda, if used, fit object.)
 }
 \description{
 General purpose regression engine for the methods bayesglm, glm and glmnet
