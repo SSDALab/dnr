@@ -1,5 +1,4 @@
 ##' Implementation of simulation engine for dynamic networks using smoothing estimates of change statistics.
-##' @title engine_smooth
 ##' @param start_network Initial list of networks 
 ##' @param inputcoeff coefficient vector
 ##' @param ns number of time points for simulation
@@ -37,7 +36,7 @@
 ##' lagmat <- matrix(sample(c(0,1),(maxlag+1)*cdim,replace = TRUE),ncol = cdim)
 ##' ylag <- rep(1,maxlag)
 ##' lagmat[1,] <- rep(0,ncol(lagmat))
-##' out <- paramest(input_network,model.terms, model.formula,
+##' out <- paramEdge(input_network,model.terms, model.formula,
 ##'                 graph_mode="digraph",group,intercept = c("edges"),exvar=NA,
 ##'                 maxlag = 3,
 ##'                 lagmat = lagmat,
@@ -46,11 +45,11 @@
 ##'                 alpha.glmnet=1)
 ##' #
 ##' start_network <- input_network
-##' inputcoeff <- out$coef$coef.edge
+##' inputcoeff <- out$coef$coef
 ##' nvertex <- 47
 ##' ns <- 10
 ##' exvar <- NA
-##' tmp <- engine_smooth(start_network=start_network,inputcoeff=inputcoeff,ns=ns,
+##' tmp <- engineEdge(start_network=start_network,inputcoeff=inputcoeff,ns=ns,
 ##'                      model.terms=model.terms, model.formula=model.formula,
 ##'                      graph_mode=graph_mode,group=group,intercept=intercept,
 ##'                      exvar=exvar,
@@ -61,7 +60,7 @@
 ##'                      alpha.glmnet=alpha.glmnet)
 ##' 
 
-engine_smooth <- function(start_network,inputcoeff,ns,
+engineEdge <- function(start_network,inputcoeff,ns,
                           model.terms, model.formula,
                           graph_mode,group,intercept,
                           exvar,
@@ -80,7 +79,7 @@ engine_smooth <- function(start_network,inputcoeff,ns,
   lagmat[1,] <- rep(0,ncol(lagmat))
   for(ncount in 1:ns){
     print(ncount)
-    out1 <- paramest(start_network,model.terms, model.formula,
+    out1 <- paramEdge(start_network,model.terms, model.formula,
                      graph_mode=graph_mode,group,intercept = intercept,
                      exvar=exvar,
                      maxlag = maxlag,
@@ -106,7 +105,7 @@ engine_smooth <- function(start_network,inputcoeff,ns,
       start_network[[i]] <- start_network[[i+1]]
     }
     start_network[[nnetinput]] <- net.current
-    coeflist[[ncount]] <- out1$coef$coef.edge
+    coeflist[[ncount]] <- out1$coef$coef
   }
   coefmat <- do.call(rbind,coeflist)
   return(list(out_network=out_network,coefmat=coefmat))

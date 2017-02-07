@@ -1,4 +1,3 @@
-##' Simulation engine for dynamic vertex case.
 ##' @title Simulation Engine for dynamic Vertex case.
 ##' @param InputNetwork List of input networks
 ##' @param numSim number of time points to simulate
@@ -83,7 +82,7 @@ engineVertex <- function(InputNetwork,
                                  paramout = paramout)
         XYdata <- Out.param$Vstats[, -1]
         InputMPLEmat <- Out.param$Edgemplemat
-        VertexCoeffs <- Out.param$VertexCoef$coef.edge
+        VertexCoeffs <- Out.param$VertexCoef$coef
         ## check if nrows of XYdata is multiple of length(Vunion)
         if(nrow(XYdata) %% length(Vunion) != 0) stop("Wrong dimension of XYdata")
         Vstats.smooth <- matrix(0, nv, ncol(XYdata))
@@ -107,7 +106,7 @@ engineVertex <- function(InputNetwork,
         for(i in seq_len(repfac)){
             smmpleMat <- smmpleMat + InputMPLEmat[(((i-1)*nEdges+1):(i*nEdges)), ]
         }
-        EdgeCoef <- Out.param$EdgeCoef$coef.edge
+        EdgeCoef <- Out.param$EdgeCoef$coef
         smmpleMat <- smmpleMat/repfac
         inputPred <- smmpleMat %*% EdgeCoef
         ## create an empty full sized network
@@ -146,8 +145,8 @@ engineVertex <- function(InputNetwork,
         InputNetwork[[netlength + simcount]] <- newNet 
 
         ## parameters time series
-        EdgeParameters[[simcount]] <- Out.param$EdgeCoef$coef.edge
-        VertexParameters[[simcount]] <- Out.param$VertexCoef$coef.edge
+        EdgeParameters[[simcount]] <- Out.param$EdgeCoef$coef
+        VertexParameters[[simcount]] <- Out.param$VertexCoef$coef
     }
     EdgeParameterMat <- do.call(rbind, EdgeParameters)
     VertexParameterMat <- do.call(rbind, VertexParameters)

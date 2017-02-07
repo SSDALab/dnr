@@ -39,10 +39,6 @@ paramVertex(InputNetwork, VertexStatsvec = rep(1, 8), maxLag,
 \item{regMethod}{Regression method. default: "bayesglm"}
 
 \item{paramout}{T/F Should the parameter estimates be returned?}
-
-\item{model.formula:}{user given formula}
-
-\item{netname:}{left side network name to be used. For now, I use "net1"}
 }
 \value{
 list with following elements:
@@ -51,8 +47,6 @@ Edgemplematfull: MPLE matrix from edges.
 Edgemplemat: Subsetted MPLE matrix.
 VertexCoef: Coefficients from vertex.
 Vstats: Vertex statistics matrix.
-
-formula to be fed to ergm
 }
 \description{
 Parameter estimation fro dynamic vertex case. The interface remaining almost identical to the static vertex one.

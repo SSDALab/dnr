@@ -21,6 +21,7 @@
 ##' VertexCoef: Coefficients from vertex.
 ##' Vstats: Vertex statistics matrix.
 ##' @author Abhirup
+##' @export
 ##' @examples
 ##' out <- paramVertex(InputNetwork = beach,
 ##'      maxLag = 3,
@@ -30,7 +31,6 @@
 ##'      EdgeGroup = "group1",
 ##'      EdgeIntercept = c("edges"),
 ##'      paramout = TRUE)
-##' @export
 
 paramVertex <- function(InputNetwork,
                         VertexStatsvec = rep(1, 8),
@@ -49,40 +49,6 @@ paramVertex <- function(InputNetwork,
                         regMethod = "bayesglm",
                         paramout = FALSE){
     ## Section 1: Vertex model
-    
-    ## regression
-    ## TODO: add options for models with intercept (regression without -1)
-    
-    edgecoeff <- function(output.edge,method='glmnet'){
-        if(method == 'glmnet'){
-            if(is.na(lambda)){
-                blogfit.select.edge = cv.glmnet(data.matrix(output.edge[,-1]),as.vector(output.edge[,1]), family="binomial", alpha=alpha.glmnet)
-                lambda = blogfit.select.edge$lambda.min
-            }
-
-            blogfit.sim.edge = glmnet(data.matrix(output.edge[,-1]),as.vector(output.edge[,1]),family="binomial", alpha=alpha.glmnet, lambda=lambda, intercept=F);
-
-            coef.edge=setNames(as.vector(blogfit.sim.edge$beta), colnames(output.edge)[-1]);
-
-            return(list(coef.edge=coef.edge, lambda=lambda, std.error=NA))
-        } else if (method == 'glm'){
-            blogfit.sim.edge = glm(y~.-1, data= output.edge,family=binomial(logit));
-
-            coef.edge=setNames(as.vector(blogfit.sim.edge$coefficients), colnames(output.edge)[-1]);
-            ## set NA to 0
-            coef.edge[which(is.na(coef.edge))] = 0;
-            return(list(coef.edge=coef.edge, lambda=NA, std.error=summary(blogfit.sim.edge)$coefficients[,2]))
-
-        } else if (method == 'bayesglm'){
-            blogfit.sim.edge = arm::bayesglm(y~.-1, data= output.edge,family=binomial(logit));
-
-            coef.edge=setNames(as.vector(blogfit.sim.edge$coefficients), colnames(output.edge)[-1]);
-            ## set NA to 0
-            coef.edge[which(is.na(coef.edge))] = 0;
-            return(list(coef.edge=coef.edge,lambda=NA, std.error=summary(blogfit.sim.edge)$coefficients[,2]))
-        }
-    }
-
 
     gengroup <- function(input_network,group,net1){
         Vmax = input_network;
@@ -222,13 +188,6 @@ paramVertex <- function(InputNetwork,
         return(formula)
     }
 
-    #'Generate formula for feeding into ergm
-    #'@title genformula
-    #'@param model.formula: user given formula
-    #'@param netname: left side network name to be used. For now, I use "net1"
-    #'@return formula to be fed to ergm
-    #'
-
     genformula <- function(model.formula,netname="net1"){
         term_formula = terms(model.formula);
         term_formula = attr(term_formula, 'term.labels');
@@ -319,7 +278,7 @@ paramVertex <- function(InputNetwork,
     VertexLagvec <- c(1, VertexLagvec)
     VertexLagvec <- VertexLagvec == 1
     
-    VertexRegout <- edgecoeff(XYdata[, VertexLagvec], method = regMethod)
+    VertexRegout <- regEngine(XYdata[, VertexLagvec], method = regMethod)
 
     ## end of vertex only regression ###
 
@@ -425,7 +384,7 @@ paramVertex <- function(InputNetwork,
     lagvec <- lagvec==1
                                         #regression
     if(paramout){
-        out <- edgecoeff(matout[,lagvec],regMethod)
+        out <- regEngine(matout[,lagvec],regMethod)
     } else out <- NULL
 
     return(list(EdgeCoef=out,

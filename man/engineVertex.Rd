@@ -48,9 +48,6 @@ SimNetwork: Output Networks
 EdgeParameterMat: Matrix of edge parameter
 VertexParameterMat: Matrix of Vertex parameters.
 }
-\description{
-Simulation engine for dynamic vertex case.
-}
 \examples{
 ## test function:
 simResult <- engineVertex(InputNetwork = beach,
