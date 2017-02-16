@@ -6,7 +6,8 @@
 \usage{
 paramVertex(InputNetwork, VertexStatsvec = rep(1, 8), maxLag,
   VertexLag = rep(1, maxLag), VertexLagMatrix = matrix(1, maxLag,
-  length(VertexStatsvec)), EdgeModelTerms, EdgeModelFormula, EdgeGroup,
+  length(VertexStatsvec)), vertexModelGroup = NA, VertexAttLag = rep(1,
+  maxLag), EdgeModelTerms, EdgeModelFormula, EdgeGroup,
   EdgeIntercept = c("edges"), EdgeExvar = NA, EdgeLag = rep(1, maxLag),
   EdgeLagMatrix = matrix(1, maxLag, length(EdgeModelTerms)),
   regMethod = "bayesglm", paramout = FALSE)
@@ -21,6 +22,10 @@ paramVertex(InputNetwork, VertexStatsvec = rep(1, 8), maxLag,
 \item{VertexLag}{binary vector of length maxLag.}
 
 \item{VertexLagMatrix}{binary matrix of size maxLag x 8.}
+
+\item{vertexModelGroup}{Grouping term for vertex model. Must be from vertex attribute list.}
+
+\item{VertexAttLag}{Lag vector for vertex group terms. Of length maxLag.}
 
 \item{EdgeModelTerms}{Model terms in edge model.}
 
@@ -41,25 +46,40 @@ paramVertex(InputNetwork, VertexStatsvec = rep(1, 8), maxLag,
 \item{paramout}{T/F Should the parameter estimates be returned?}
 }
 \value{
-list with following elements:
-EdgeCoef: edge coefficients.
-Edgemplematfull: MPLE matrix from edges.
-Edgemplemat: Subsetted MPLE matrix.
-VertexCoef: Coefficients from vertex.
-Vstats: Vertex statistics matrix.
+list with following elements: \cr
+EdgeCoef: edge coefficients. \cr
+Edgemplematfull: MPLE matrix from edges. \cr
+Edgemplemat: Subsetted MPLE matrix. \cr
+VertexCoef: Coefficients from vertex. \cr
+Vstats: Vertex statistics matrix.\cr
+EdgePredictor0: Edge predictors with imputations with 0.\cr
+EdgePredictor1: Edge predictors with imputations with 1. \cr
+EdgePredictorNA: Edge predictors with imputations with NA. \cr
+EdgeFit: Edge model. \cr 
+VertexStatsFull: Vertex statistics matrix, full. \cr
+VertexFit: Vertex model. \cr
 }
 \description{
 Parameter estimation fro dynamic vertex case. The interface remaining almost identical to the static vertex one.
 }
 \examples{
+maxLag = 3
+VertexLag = rep(1, maxLag)
+VertexLagMatrix <- matrix(0, maxLag, 8)
+VertexLagMatrix[, c(4, 7)] <- 1
+VertexLagMatrix[c(2,3),7] <- 0
+
 out <- paramVertex(InputNetwork = beach,
-     maxLag = 3,
-     EdgeModelTerms = c("triadcensus.003", "triadcensus.012",
-      "triadcensus.102","triadcensus.021D"),
-     EdgeModelFormula = net ~ triadcensus(0:3),
-     EdgeGroup = "group1",
-     EdgeIntercept = c("edges"),
-     paramout = TRUE)
+                   maxLag = 3,
+                   VertexStatsvec = rep(1, 8),
+                   vertexModelGroup = "regular",
+                   VertexLag = rep(1, maxLag),
+                   VertexLagMatrix = VertexLagMatrix,
+                   EdgeModelTerms = NA,
+                   EdgeModelFormula = NA,
+                   EdgeGroup = NA,
+                   EdgeIntercept = c("edges"),
+                   paramout = TRUE)
 }
 \author{
 Abhirup

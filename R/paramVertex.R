@@ -5,6 +5,8 @@
 ##' @param maxLag maximum lag, numeric.
 ##' @param VertexLag binary vector of length maxLag.
 ##' @param VertexLagMatrix binary matrix of size maxLag x 8.
+##' @param vertexModelGroup Grouping term for vertex model. Must be from vertex attribute list.
+##' @param VertexAttLag Lag vector for vertex group terms. Of length maxLag.
 ##' @param EdgeModelTerms Model terms in edge model.
 ##' @param EdgeModelFormula Model formula in edge model.
 ##' @param EdgeGroup Group terms in edge model.
@@ -14,23 +16,39 @@
 ##' @param EdgeLagMatrix binary matrix of dim maxLag x length(EdgeModelTerms)
 ##' @param regMethod Regression method. default: "bayesglm"
 ##' @param paramout T/F Should the parameter estimates be returned?
-##' @return list with following elements:
-##' EdgeCoef: edge coefficients.
-##' Edgemplematfull: MPLE matrix from edges.
-##' Edgemplemat: Subsetted MPLE matrix.
-##' VertexCoef: Coefficients from vertex.
-##' Vstats: Vertex statistics matrix.
+##' @return list with following elements: \cr
+##' EdgeCoef: edge coefficients. \cr
+##' Edgemplematfull: MPLE matrix from edges. \cr
+##' Edgemplemat: Subsetted MPLE matrix. \cr
+##' VertexCoef: Coefficients from vertex. \cr
+##' Vstats: Vertex statistics matrix.\cr
+##' EdgePredictor0: Edge predictors with imputations with 0.\cr
+##' EdgePredictor1: Edge predictors with imputations with 1. \cr
+##' EdgePredictorNA: Edge predictors with imputations with NA. \cr
+##' EdgeFit: Edge model. \cr 
+##' VertexStatsFull: Vertex statistics matrix, full. \cr
+##' VertexFit: Vertex model. \cr
 ##' @author Abhirup
 ##' @export
 ##' @examples
+##' maxLag = 3
+##' VertexLag = rep(1, maxLag)
+##' VertexLagMatrix <- matrix(0, maxLag, 8)
+##' VertexLagMatrix[, c(4, 7)] <- 1
+##' VertexLagMatrix[c(2,3),7] <- 0
+##' 
 ##' out <- paramVertex(InputNetwork = beach,
-##'      maxLag = 3,
-##'      EdgeModelTerms = c("triadcensus.003", "triadcensus.012",
-##'       "triadcensus.102","triadcensus.021D"),
-##'      EdgeModelFormula = net ~ triadcensus(0:3),
-##'      EdgeGroup = "group1",
-##'      EdgeIntercept = c("edges"),
-##'      paramout = TRUE)
+##'                    maxLag = 3,
+##'                    VertexStatsvec = rep(1, 8),
+##'                    vertexModelGroup = "regular",
+##'                    VertexLag = rep(1, maxLag),
+##'                    VertexLagMatrix = VertexLagMatrix,
+##'                    EdgeModelTerms = NA,
+##'                    EdgeModelFormula = NA,
+##'                    EdgeGroup = NA,
+##'                    EdgeIntercept = c("edges"),
+##'                    paramout = TRUE)
+
 
 paramVertex <- function(InputNetwork,
                         VertexStatsvec = rep(1, 8),
@@ -38,6 +56,8 @@ paramVertex <- function(InputNetwork,
                         VertexLag = rep(1, maxLag),
                         VertexLagMatrix = matrix(1, maxLag,
                                                  length(VertexStatsvec)),
+                        vertexModelGroup = NA,
+                        VertexAttLag = rep(1, maxLag),
                         EdgeModelTerms,
                         EdgeModelFormula,
                         EdgeGroup,
@@ -227,10 +247,12 @@ paramVertex <- function(InputNetwork,
     y <- NULL
     x.Nets <- NULL
     x.vstats <- NULL
+    x.vatts <- NULL
     ## construct the response and predictors
     for(i in seq_len(netlength - maxLag)) {
         vstats.current <- NULL
         xlags.current <- NULL
+        veratts.current <- NULL
         for(j in (maxLag:1)) { ## count down
             x.current <- InputNetwork[[i + j - 1]]
             x.lag <- numeric(length(Vunion))
@@ -243,6 +265,15 @@ paramVertex <- function(InputNetwork,
             verstats.lag[match(rownames(current.vstats),
                                rownames(verstats.lag)), ] <- current.vstats
             vstats.current <- cbind(vstats.current, verstats.lag)
+
+###############################
+            if(!is.na(vertexModelGroup)){
+                veratts.lag <- numeric(length(Vunion))
+                veratts.lag[match(current.vnames, Vunion)] <-
+                    get.vertex.attribute(x.current, vertexModelGroup)
+                veratts.current <- cbind(veratts.current, veratts.lag)
+            }
+
         }
         net.current <- InputNetwork[[i + maxLag]]
         y.current <- numeric(length(Vunion))
@@ -252,12 +283,24 @@ paramVertex <- function(InputNetwork,
         y <- c(y, y.current)
         x.Nets <- rbind(x.Nets, xlags.current)
         x.vstats <- rbind(x.vstats, vstats.current)
+###############################
+        if(!is.na(vertexModelGroup)){
+            x.vatts <- rbind(x.vatts, veratts.current)
+        }
+
     }
 
     for(i in seq_len(NCOL(x.Nets))){
         colnames(x.Nets)[i] <- paste0("lag", i, sep = "")
     }
+###############################
+    if(!is.na(vertexModelGroup)){
+        for(i in seq_len(NCOL(x.vatts))){
+            colnames(x.vatts)[i] <- paste0("attrib", i, sep = "")
+        }
+    }
 
+    
     cnames <- numeric(ncol(x.vstats))
     for(i in seq_len(maxLag)){
         for(j in seq_len(nvertexstats)){
@@ -266,15 +309,26 @@ paramVertex <- function(InputNetwork,
         }
     }
     colnames(x.vstats) <- cnames
-    XYdata <- cbind(y, x.Nets, x.vstats)
-
+    if(!is.na(vertexModelGroup)){
+        XYdata <- cbind(y, x.Nets, x.vatts, x.vstats)
+    } else{
+        XYdata <- cbind(y, x.Nets, x.vstats)
+    }
     
     ## colnames(XYdata) <- NULL
     XYdata <- as.data.frame(XYdata)
     colnames(XYdata)[1] <- "y"
     ## subset
     VertexLagvec <- c(t(VertexLagMatrix))
-    if(maxLag > 1) VertexLagvec <- c(VertexLag, VertexLagvec)
+    if(maxLag > 1) {
+        if(!is.na(vertexModelGroup)){
+            VertexLagvec <-
+                c(VertexLag, VertexAttLag,VertexLagvec)
+        } else {
+            VertexLagvec <-
+                c(VertexLag,VertexLagvec)
+        }
+    }
     VertexLagvec <- c(1, VertexLagvec)
     VertexLagvec <- VertexLagvec == 1
     
@@ -377,8 +431,10 @@ paramVertex <- function(InputNetwork,
     }
 
     ## subsetting
-    lagvec <- rep(1,NCOL(csintercept))
-    if(sum(is.na(EdgeModelTerms)) != 0) lagvec <- c(lagvec,t(EdgeLagMatrix))
+    if(sum(!is.na(csintercept)) > 0){
+        lagvec <- rep(1,NCOL(csintercept))
+    } 
+    if(sum(!is.na(EdgeModelTerms)) > 0) lagvec <- c(lagvec,t(EdgeLagMatrix))
     if(maxLag > 1) lagvec <- c(lagvec,EdgeLag)
     lagvec <- c(1,lagvec)
     lagvec <- lagvec==1
@@ -387,12 +443,15 @@ paramVertex <- function(InputNetwork,
         out <- regEngine(matout[,lagvec],regMethod)
     } else out <- NULL
 
-    return(list(EdgeCoef=out,
+    return(list(EdgeCoef=out$coef,
+                EdgeFit = out,
                 Edgemplematfull=matout,
                 Edgemplemat=matout[,lagvec],
                 EdgePredictor0 = fullPredictorStack0,
                 EdgePredictor1 = fullPredictorStack1,
                 EdgePredictorNA = fullPredictorStackNA,
-                VertexCoef = VertexRegout,
-                Vstats = XYdata[, VertexLagvec]))
+                VertexCoef = VertexRegout$coef,
+                Vstats = XYdata[, VertexLagvec],
+                VertexStatsFull = XYdata,
+                VertexFit = VertexRegout))
 }
