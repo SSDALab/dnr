@@ -5,7 +5,7 @@
 \title{Parameter estimation for Vertex model only for a list of dynamic networks.}
 \usage{
 paramVertexOnlyGroup(InputNetwork, VertexStatsvec = rep(1, 8), maxLag,
-  vertexModelGroup = NA, VertexLag = rep(1, maxLag), VertexAttLag = rep(1,
+  VertexModelGroup = NA, VertexLag = rep(1, maxLag), VertexAttLag = rep(1,
   maxLag), VertexLagMatrix = matrix(1, maxLag, length(VertexStatsvec)),
   regMethod = "bayesglm")
 }
@@ -16,7 +16,7 @@ paramVertexOnlyGroup(InputNetwork, VertexStatsvec = rep(1, 8), maxLag,
 
 \item{maxLag}{maximum lag.}
 
-\item{vertexModelGroup}{Group term for vertex model.}
+\item{VertexModelGroup}{Group term for vertex model.}
 
 \item{VertexLag}{Binary vector of size maxLag, indicating Lag terms in the model.}
 
@@ -42,14 +42,14 @@ maxLag <- 3
 VertexStatsvec <- rep(1, 8)
 VertexLag <- rep(1, maxLag)
 regMethod <- "bayesglm"
-vertexModelGroup <- "regular"
+VertexModelGroup <- "regular"
 VertexLagMatrix <- matrix(0, maxLag, 8)
 VertexLagMatrix[, c(4, 7)] <- 1
 VertexLagMatrix[c(2,3),7] <- 0
 Vout1 <- paramVertexOnlyGroup(InputNetwork = beach,
                           maxLag = maxLag,
                           VertexStatsvec = VertexStatsvec,
-                          vertexModelGroup = vertexModelGroup,
+                          VertexModelGroup = VertexModelGroup,
                           VertexLag = VertexLag,
                           VertexLagMatrix = VertexLagMatrix)
 summary(Vout1$VertexFit$fit)

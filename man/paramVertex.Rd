@@ -6,7 +6,7 @@
 \usage{
 paramVertex(InputNetwork, VertexStatsvec = rep(1, 8), maxLag,
   VertexLag = rep(1, maxLag), VertexLagMatrix = matrix(1, maxLag,
-  length(VertexStatsvec)), vertexModelGroup = NA, VertexAttLag = rep(1,
+  length(VertexStatsvec)), VertexModelGroup = NA, VertexAttLag = rep(1,
   maxLag), EdgeModelTerms, EdgeModelFormula, EdgeGroup,
   EdgeIntercept = c("edges"), EdgeExvar = NA, EdgeLag = rep(1, maxLag),
   EdgeLagMatrix = matrix(1, maxLag, length(EdgeModelTerms)),
@@ -23,7 +23,7 @@ paramVertex(InputNetwork, VertexStatsvec = rep(1, 8), maxLag,
 
 \item{VertexLagMatrix}{binary matrix of size maxLag x 8.}
 
-\item{vertexModelGroup}{Grouping term for vertex model. Must be from vertex attribute list.}
+\item{VertexModelGroup}{Grouping term for vertex model. Must be from vertex attribute list.}
 
 \item{VertexAttLag}{Lag vector for vertex group terms. Of length maxLag.}
 
@@ -72,7 +72,7 @@ VertexLagMatrix[c(2,3),7] <- 0
 out <- paramVertex(InputNetwork = beach,
                    maxLag = 3,
                    VertexStatsvec = rep(1, 8),
-                   vertexModelGroup = "regular",
+                   VertexModelGroup = "regular",
                    VertexLag = rep(1, maxLag),
                    VertexLagMatrix = VertexLagMatrix,
                    EdgeModelTerms = NA,

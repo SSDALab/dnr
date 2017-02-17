@@ -2,7 +2,7 @@
 ##' @param InputNetwork Input network list.
 ##' @param VertexStatsvec Binary vector of size 8, indicating vertex model.
 ##' @param maxLag maximum lag.
-##' @param vertexModelGroup Group term for vertex model.
+##' @param VertexModelGroup Group term for vertex model.
 ##' @param VertexLag Binary vector of size maxLag, indicating Lag terms in the model.
 ##' @param VertexAttLag Vertex group term lag vector.
 ##' @param VertexLagMatrix Binary matrix indicating lagged vertex statistics in
@@ -20,14 +20,14 @@
 ##' VertexStatsvec <- rep(1, 8)
 ##' VertexLag <- rep(1, maxLag)
 ##' regMethod <- "bayesglm"
-##' vertexModelGroup <- "regular"
+##' VertexModelGroup <- "regular"
 ##' VertexLagMatrix <- matrix(0, maxLag, 8)
 ##' VertexLagMatrix[, c(4, 7)] <- 1
 ##' VertexLagMatrix[c(2,3),7] <- 0
 ##' Vout1 <- paramVertexOnlyGroup(InputNetwork = beach,
 ##'                           maxLag = maxLag,
 ##'                           VertexStatsvec = VertexStatsvec,
-##'                           vertexModelGroup = vertexModelGroup,
+##'                           VertexModelGroup = VertexModelGroup,
 ##'                           VertexLag = VertexLag,
 ##'                           VertexLagMatrix = VertexLagMatrix)
 ##' summary(Vout1$VertexFit$fit)
@@ -35,7 +35,7 @@
 paramVertexOnlyGroup <- function(InputNetwork,
                                  VertexStatsvec = rep(1, 8),
                                  maxLag,
-                                 vertexModelGroup = NA,
+                                 VertexModelGroup = NA,
                                  VertexLag = rep(1, maxLag),
                                  VertexAttLag = rep(1, maxLag),
                                  VertexLagMatrix = matrix(1, maxLag,
@@ -90,10 +90,10 @@ paramVertexOnlyGroup <- function(InputNetwork,
             vstats.current <- cbind(vstats.current, verstats.lag)
 
 #####################
-            if(!is.na(vertexModelGroup)){
+            if(!is.na(VertexModelGroup)){
                 veratts.lag <- numeric(length(Vunion))
                 veratts.lag[match(current.vnames, Vunion)] <-
-                    get.vertex.attribute(x.current, vertexModelGroup)
+                    get.vertex.attribute(x.current, VertexModelGroup)
                 veratts.current <- cbind(veratts.current, veratts.lag)
             }
         }
@@ -107,7 +107,7 @@ paramVertexOnlyGroup <- function(InputNetwork,
         y <- c(y, y.current)
         x.Nets <- rbind(x.Nets, xlags.current)
         x.vstats <- rbind(x.vstats, vstats.current)
-        if(!is.na(vertexModelGroup)){
+        if(!is.na(VertexModelGroup)){
             x.vatts <- rbind(x.vatts, veratts.current)
         }
     }
@@ -116,7 +116,7 @@ paramVertexOnlyGroup <- function(InputNetwork,
     for(i in seq_len(NCOL(x.Nets))){
         colnames(x.Nets)[i] <- paste0("lag", i, sep = "")
     }
-    if(!is.na(vertexModelGroup)){
+    if(!is.na(VertexModelGroup)){
         for(i in seq_len(NCOL(x.vatts))){
             colnames(x.vatts)[i] <- paste0("attrib", i, sep = "")
         }
@@ -129,7 +129,7 @@ paramVertexOnlyGroup <- function(InputNetwork,
         }
     }
     colnames(x.vstats) <- cnames
-    if(!is.na(vertexModelGroup)){
+    if(!is.na(VertexModelGroup)){
         XYdata <- cbind(y, x.Nets, x.vatts, x.vstats)
     } else{
         XYdata <- cbind(y, x.Nets, x.vstats)
@@ -141,7 +141,7 @@ paramVertexOnlyGroup <- function(InputNetwork,
     ## subset
     VertexLagvec <- c(t(VertexLagMatrix))
     if(maxLag > 1) {
-        if(!is.na(vertexModelGroup)){
+        if(!is.na(VertexModelGroup)){
             VertexLagvec <-
                 c(VertexLag, VertexAttLag,VertexLagvec)
         } else {
