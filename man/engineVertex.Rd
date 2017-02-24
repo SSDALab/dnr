@@ -6,7 +6,8 @@
 \usage{
 engineVertex(InputNetwork, numSim, maxLag, VertexStatsvec = rep(1,
   nvertstats), VertexLag = rep(1, maxLag), VertexLagMatrix = matrix(1,
-  maxLag, length(VertexStatsvec)), EdgeModelTerms, EdgeModelFormula,
+  maxLag, length(VertexStatsvec)), VertexModelGroup = NA,
+  VertexAttLag = rep(1, maxLag), EdgeModelTerms, EdgeModelFormula,
   EdgeGroup = NA, EdgeIntercept = c("edges"), EdgeExvar = NA,
   EdgeLag = rep(1, maxLag), EdgeLagMatrix = matrix(1, maxLag,
   length(EdgeModelTerms)), regMethod = "bayesglm", paramout = TRUE)
@@ -23,6 +24,10 @@ engineVertex(InputNetwork, numSim, maxLag, VertexStatsvec = rep(1,
 \item{VertexLag}{vector of lag for vertex}
 
 \item{VertexLagMatrix}{matrix of lags for vertex stats.}
+
+\item{VertexModelGroup}{Group term for vertex model.}
+
+\item{VertexAttLag}{Lag vector for group term for vertex.}
 
 \item{EdgeModelTerms}{Edge Model terms}
 
@@ -49,16 +54,25 @@ EdgeParameterMat: Matrix of edge parameter
 VertexParameterMat: Matrix of Vertex parameters.
 }
 \examples{
-## test function:
+maxLag <- 3
+VertexLag <- rep(1, maxLag)
+VertexLagMatrix <- matrix(0, maxLag, 8)
+VertexLagMatrix[, c(4, 7)] <- 1
+VertexLagMatrix[c(2, 3), ] <- 1
 simResult <- engineVertex(InputNetwork = beach,
                           numSim = 5,
                           maxLag = 3,
-                          EdgeModelTerms = c("triadcensus.003",
-                                             "triadcensus.012",
-                                             "triadcensus.102",
-                                             "triadcensus.021D"),
-                          EdgeModelFormula = net ~ triadcensus(0:3)
+                          VertexStatsvec = rep(1, 8),
+                          VertexModelGroup = "regular",
+                          VertexAttLag = rep(1, maxLag),
+                          VertexLag = rep(1, maxLag),
+                          VertexLagMatrix = VertexLagMatrix,
+                          EdgeModelTerms = NA,
+                          EdgeModelFormula = NA,
+                          EdgeGroup = NA,
+                          EdgeIntercept = c("edges")
                           )
+
 }
 \author{
 Abhirup

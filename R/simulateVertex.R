@@ -5,6 +5,8 @@
 ##' @param VertexStatsvec Binary vector for vertex model.
 ##' @param VertexLag vector of lag for vertex
 ##' @param VertexLagMatrix matrix of lags for vertex stats.
+##' @param VertexModelGroup Group term for vertex model.
+##' @param VertexAttLag Lag vector for group term for vertex.
 ##' @param EdgeModelTerms Edge Model terms
 ##' @param EdgeModelFormula Edge model formula
 ##' @param EdgeGroup edge group term
@@ -20,34 +22,49 @@
 ##' VertexParameterMat: Matrix of Vertex parameters.
 ##' @export
 ##'@examples
-##' ## test function:
+##' maxLag <- 3
+##' VertexLag <- rep(1, maxLag)
+##' VertexLagMatrix <- matrix(0, maxLag, 8)
+##' VertexLagMatrix[, c(4, 7)] <- 1
+##' VertexLagMatrix[c(2, 3), ] <- 1
 ##' simResult <- engineVertex(InputNetwork = beach,
 ##'                           numSim = 5,
 ##'                           maxLag = 3,
-##'                           EdgeModelTerms = c("triadcensus.003",
-##'                                              "triadcensus.012",
-##'                                              "triadcensus.102",
-##'                                              "triadcensus.021D"),
-##'                           EdgeModelFormula = net ~ triadcensus(0:3)
+##'                           VertexStatsvec = rep(1, 8),
+##'                           VertexModelGroup = "regular",
+##'                           VertexAttLag = rep(1, maxLag),
+##'                           VertexLag = rep(1, maxLag),
+##'                           VertexLagMatrix = VertexLagMatrix,
+##'                           EdgeModelTerms = NA,
+##'                           EdgeModelFormula = NA,
+##'                           EdgeGroup = NA,
+##'                           EdgeIntercept = c("edges")
 ##'                           )
+##'
 ##' @author Abhirup
+
+
+
+
 engineVertex <- function(InputNetwork,
-                          numSim,
-                          maxLag,
-                          VertexStatsvec = rep(1, nvertstats),
-                          VertexLag = rep(1, maxLag),
-                          VertexLagMatrix = matrix(1, maxLag,
-                                                   length(VertexStatsvec)),
-                          EdgeModelTerms,
-                          EdgeModelFormula,
-                          EdgeGroup = NA,
-                          EdgeIntercept = c("edges"),
-                          EdgeExvar = NA,
-                          EdgeLag = rep(1, maxLag),
-                          EdgeLagMatrix = matrix(1, maxLag,
-                                                 length(EdgeModelTerms)),
-                          regMethod = "bayesglm",
-                          paramout = TRUE){
+                         numSim,
+                         maxLag,
+                         VertexStatsvec = rep(1, nvertstats),
+                         VertexLag = rep(1, maxLag),
+                         VertexLagMatrix = matrix(1, maxLag,
+                                                  length(VertexStatsvec)),
+                         VertexModelGroup = NA,
+                         VertexAttLag = rep(1, maxLag),
+                         EdgeModelTerms,
+                         EdgeModelFormula,
+                         EdgeGroup = NA,
+                         EdgeIntercept = c("edges"),
+                         EdgeExvar = NA,
+                         EdgeLag = rep(1, maxLag),
+                         EdgeLagMatrix = matrix(1, maxLag,
+                                                length(EdgeModelTerms)),
+                         regMethod = "bayesglm",
+                         paramout = TRUE){
     InputNetwork <- rmNAnetworks(InputNetwork)
     Vunion <- unique(unlist(lapply(InputNetwork, network.vertex.names.1)))
     netlength <- length(InputNetwork)
@@ -60,7 +77,7 @@ engineVertex <- function(InputNetwork,
     
     isdirected <- network::get.network.attribute(InputNetwork[[1]], "directed")
     if(isdirected) {
-      gmode <- "digraph"
+        gmode <- "digraph"
     } else gmode <- "graph"
     
     
@@ -71,6 +88,8 @@ engineVertex <- function(InputNetwork,
                                  maxLag = maxLag,
                                  VertexLag = VertexLag,
                                  VertexLagMatrix = VertexLagMatrix,
+                                 VertexModelGroup = VertexModelGroup,
+                                 VertexAttLag = VertexAttLag,
                                  EdgeModelTerms = EdgeModelTerms,
                                  EdgeModelFormula = EdgeModelFormula,
                                  EdgeGroup = EdgeGroup,
@@ -155,4 +174,6 @@ engineVertex <- function(InputNetwork,
                 EdgeParameterMat = EdgeParameterMat,
                 VertexParameterMat = VertexParameterMat))
 }
+
+
 
