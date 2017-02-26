@@ -2,6 +2,7 @@
 
 export(engineEdge)
 export(engineVertex)
+export(engineVertexNS)
 export(paramEdge)
 export(paramVertex)
 export(paramVertexOnly)
