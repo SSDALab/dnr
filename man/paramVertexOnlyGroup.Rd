@@ -4,15 +4,15 @@
 \alias{paramVertexOnlyGroup}
 \title{Parameter estimation for Vertex model only for a list of dynamic networks.}
 \usage{
-paramVertexOnlyGroup(InputNetwork, VertexStatsvec = rep(1, 8), maxLag,
-  VertexModelGroup = NA, VertexLag = rep(1, maxLag), VertexAttLag = rep(1,
-  maxLag), VertexLagMatrix = matrix(1, maxLag, length(VertexStatsvec)),
-  regMethod = "bayesglm")
+paramVertexOnlyGroup(InputNetwork, VertexStatsvec = rep(1, nvertexstats),
+  maxLag, VertexModelGroup = NA, VertexLag = rep(1, maxLag),
+  VertexAttLag = rep(1, maxLag), VertexLagMatrix = matrix(1, maxLag,
+  length(VertexStatsvec)), regMethod = "bayesglm")
 }
 \arguments{
 \item{InputNetwork}{Input network list.}
 
-\item{VertexStatsvec}{Binary vector of size 8, indicating vertex model.}
+\item{VertexStatsvec}{Binary vector of size 9, indicating vertex model.}
 
 \item{maxLag}{maximum lag.}
 
@@ -37,13 +37,14 @@ VertexStatsFull: Full matrix of vertex stats.
 Parameter estimation for Vertex model only for a list of dynamic networks.
 }
 \examples{
+nvertexstats <- 9
 InputNetwork <- beach
 maxLag <- 3
-VertexStatsvec <- rep(1, 8)
+VertexStatsvec <- rep(1, nvertexstats)
 VertexLag <- rep(1, maxLag)
 regMethod <- "bayesglm"
 VertexModelGroup <- "regular"
-VertexLagMatrix <- matrix(0, maxLag, 8)
+VertexLagMatrix <- matrix(0, maxLag, nvertexstats)
 VertexLagMatrix[, c(4, 7)] <- 1
 VertexLagMatrix[c(2,3),7] <- 0
 Vout1 <- paramVertexOnlyGroup(InputNetwork = beach,

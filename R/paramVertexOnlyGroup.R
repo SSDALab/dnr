@@ -1,6 +1,6 @@
 ##' Parameter estimation for Vertex model only for a list of dynamic networks.
 ##' @param InputNetwork Input network list.
-##' @param VertexStatsvec Binary vector of size 8, indicating vertex model.
+##' @param VertexStatsvec Binary vector of size 9, indicating vertex model.
 ##' @param maxLag maximum lag.
 ##' @param VertexModelGroup Group term for vertex model.
 ##' @param VertexLag Binary vector of size maxLag, indicating Lag terms in the model.
@@ -15,13 +15,14 @@
 ##' @author Abhirup
 ##' @export
 ##' @examples
+##' nvertexstats <- 9
 ##' InputNetwork <- beach
 ##' maxLag <- 3
-##' VertexStatsvec <- rep(1, 8)
+##' VertexStatsvec <- rep(1, nvertexstats)
 ##' VertexLag <- rep(1, maxLag)
 ##' regMethod <- "bayesglm"
 ##' VertexModelGroup <- "regular"
-##' VertexLagMatrix <- matrix(0, maxLag, 8)
+##' VertexLagMatrix <- matrix(0, maxLag, nvertexstats)
 ##' VertexLagMatrix[, c(4, 7)] <- 1
 ##' VertexLagMatrix[c(2,3),7] <- 0
 ##' Vout1 <- paramVertexOnlyGroup(InputNetwork = beach,
@@ -33,7 +34,7 @@
 ##' summary(Vout1$VertexFit$fit)
 
 paramVertexOnlyGroup <- function(InputNetwork,
-                                 VertexStatsvec = rep(1, 8),
+                                 VertexStatsvec = rep(1, nvertexstats),
                                  maxLag,
                                  VertexModelGroup = NA,
                                  VertexLag = rep(1, maxLag),
@@ -83,7 +84,7 @@ paramVertexOnlyGroup <- function(InputNetwork,
             x.lag[match(current.vnames, Vunion)] <- 1
             xlags.current <- cbind(xlags.current, x.lag)
             current.vstats <- vertexstats(x.current, gmode = "digraph")
-            verstats.lag <- matrix(0, nrow = length(Vunion), ncol = nvertstats)
+            verstats.lag <- matrix(0, nrow = length(Vunion), ncol = nvertexstats)
             rownames(verstats.lag) <- Vunion
             verstats.lag[match(rownames(current.vstats),
                                rownames(verstats.lag)), ] <- current.vstats

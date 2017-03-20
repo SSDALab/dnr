@@ -5,7 +5,7 @@
 \title{Simulation Engine for dynamic Vertex case without smoothing of estimated predictor matrices.}
 \usage{
 engineVertexNS(InputNetwork, numSim, maxLag, VertexStatsvec = rep(1,
-  nvertstats), VertexLag = rep(1, maxLag), VertexLagMatrix = matrix(1,
+  nvertexstats), VertexLag = rep(1, maxLag), VertexLagMatrix = matrix(1,
   maxLag, length(VertexStatsvec)), VertexModelGroup = NA,
   VertexAttLag = rep(1, maxLag), EdgeModelTerms, EdgeModelFormula,
   EdgeGroup = NA, EdgeIntercept = c("edges"), EdgeExvar = NA,
@@ -54,15 +54,16 @@ EdgeParameterMat: Matrix of edge parameter \cr
 VertexParameterMat: Matrix of Vertex parameters. \cr
 }
 \examples{
+nvertexstats <- 9
 maxLag <- 3
 VertexLag <- rep(1, maxLag)
-VertexLagMatrix <- matrix(0, maxLag, 8)
+VertexLagMatrix <- matrix(0, maxLag, nvertexstats)
 VertexLagMatrix[, c(4, 7)] <- 1
 VertexLagMatrix[c(2, 3), ] <- 1
 simResult <- engineVertexNS(InputNetwork = beach,
                           numSim = 5,
                           maxLag = 3,
-                          VertexStatsvec = rep(1, 8),
+                          VertexStatsvec = rep(1, nvertexstats),
                           VertexModelGroup = "regular",
                           VertexAttLag = rep(1, maxLag),
                           VertexLag = rep(1, maxLag),

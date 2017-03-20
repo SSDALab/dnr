@@ -4,7 +4,7 @@
 \alias{paramVertex}
 \title{Parameter estimation for Vertex dynamics}
 \usage{
-paramVertex(InputNetwork, VertexStatsvec = rep(1, 8), maxLag,
+paramVertex(InputNetwork, VertexStatsvec = rep(1, nvertexstats), maxLag,
   VertexLag = rep(1, maxLag), VertexLagMatrix = matrix(1, maxLag,
   length(VertexStatsvec)), VertexModelGroup = NA, VertexAttLag = rep(1,
   maxLag), EdgeModelTerms, EdgeModelFormula, EdgeGroup,
@@ -63,15 +63,16 @@ VertexFit: Vertex model. \cr
 Parameter estimation fro dynamic vertex case. The interface remaining almost identical to the static vertex one.
 }
 \examples{
+nvertexstats <- 9
 maxLag = 3
 VertexLag = rep(1, maxLag)
-VertexLagMatrix <- matrix(0, maxLag, 8)
+VertexLagMatrix <- matrix(0, maxLag, nvertexstats)
 VertexLagMatrix[, c(4, 7)] <- 1
 VertexLagMatrix[c(2,3),7] <- 0
 
 out <- paramVertex(InputNetwork = beach,
                    maxLag = 3,
-                   VertexStatsvec = rep(1, 8),
+                   VertexStatsvec = rep(1, nvertexstats),
                    VertexModelGroup = "regular",
                    VertexLag = rep(1, maxLag),
                    VertexLagMatrix = VertexLagMatrix,

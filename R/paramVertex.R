@@ -31,15 +31,16 @@
 ##' @author Abhirup
 ##' @export
 ##' @examples
+##' nvertexstats <- 9
 ##' maxLag = 3
 ##' VertexLag = rep(1, maxLag)
-##' VertexLagMatrix <- matrix(0, maxLag, 8)
+##' VertexLagMatrix <- matrix(0, maxLag, nvertexstats)
 ##' VertexLagMatrix[, c(4, 7)] <- 1
 ##' VertexLagMatrix[c(2,3),7] <- 0
 ##' 
 ##' out <- paramVertex(InputNetwork = beach,
 ##'                    maxLag = 3,
-##'                    VertexStatsvec = rep(1, 8),
+##'                    VertexStatsvec = rep(1, nvertexstats),
 ##'                    VertexModelGroup = "regular",
 ##'                    VertexLag = rep(1, maxLag),
 ##'                    VertexLagMatrix = VertexLagMatrix,
@@ -51,7 +52,7 @@
 
 
 paramVertex <- function(InputNetwork,
-                        VertexStatsvec = rep(1, 8),
+                        VertexStatsvec = rep(1, nvertexstats),
                         maxLag,
                         VertexLag = rep(1, maxLag),
                         VertexLagMatrix = matrix(1, maxLag,
@@ -260,7 +261,7 @@ paramVertex <- function(InputNetwork,
             x.lag[match(current.vnames, Vunion)] <- 1
             xlags.current <- cbind(xlags.current, x.lag)
             current.vstats <- vertexstats(x.current, gmode = "digraph")
-            verstats.lag <- matrix(0, nrow = length(Vunion), ncol = nvertstats)
+            verstats.lag <- matrix(0, nrow = length(Vunion), ncol = nvertexstats)
             rownames(verstats.lag) <- Vunion
             verstats.lag[match(rownames(current.vstats),
                                rownames(verstats.lag)), ] <- current.vstats

@@ -22,15 +22,16 @@
 ##' VertexParameterMat: Matrix of Vertex parameters. \cr
 ##' @export
 ##'@examples
+##' nvertexstats <- 9
 ##' maxLag <- 3
 ##' VertexLag <- rep(1, maxLag)
-##' VertexLagMatrix <- matrix(0, maxLag, 8)
+##' VertexLagMatrix <- matrix(0, maxLag, nvertexstats)
 ##' VertexLagMatrix[, c(4, 7)] <- 1
 ##' VertexLagMatrix[c(2, 3), ] <- 1
 ##' simResult <- engineVertexNS(InputNetwork = beach,
 ##'                           numSim = 5,
 ##'                           maxLag = 3,
-##'                           VertexStatsvec = rep(1, 8),
+##'                           VertexStatsvec = rep(1, nvertexstats),
 ##'                           VertexModelGroup = "regular",
 ##'                           VertexAttLag = rep(1, maxLag),
 ##'                           VertexLag = rep(1, maxLag),
@@ -45,7 +46,7 @@
 engineVertexNS <- function(InputNetwork,
                          numSim,
                          maxLag,
-                         VertexStatsvec = rep(1, nvertstats),
+                         VertexStatsvec = rep(1, nvertexstats),
                          VertexLag = rep(1, maxLag),
                          VertexLagMatrix = matrix(1, maxLag,
                                                   length(VertexStatsvec)),

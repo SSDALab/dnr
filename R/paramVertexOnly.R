@@ -1,6 +1,6 @@
 ##' Parameter estimation for Vertex model only for a list of dynamic networks.
 ##' @param InputNetwork Input network list.
-##' @param VertexStatsvec Binary vector of size 8, indicating vertex model.
+##' @param VertexStatsvec Binary vector of size 9, indicating vertex model.
 ##' @param maxLag maximum lag.
 ##' @param VertexLag Binary vector of size maxLag, indicating Lag terms in the model.
 ##' @param VertexLagMatrix Binary matrix indicating lagged vertex statistics in
@@ -13,7 +13,7 @@
 ##' @author Abhirup
 ##' @export
 paramVertexOnly <- function(InputNetwork,
-                            VertexStatsvec = rep(1, 8),
+                            VertexStatsvec = rep(1, nvertexstats),
                             maxLag,
                             VertexLag = rep(1, maxLag),
                             VertexLagMatrix = matrix(1, maxLag,
@@ -140,7 +140,7 @@ paramVertexOnly <- function(InputNetwork,
             x.lag[match(current.vnames, Vunion)] <- 1
             xlags.current <- cbind(xlags.current, x.lag)
             current.vstats <- vertexstats(x.current, gmode = "digraph")
-            verstats.lag <- matrix(0, nrow = length(Vunion), ncol = nvertstats)
+            verstats.lag <- matrix(0, nrow = length(Vunion), ncol = nvertexstats)
             rownames(verstats.lag) <- Vunion
             verstats.lag[match(rownames(current.vstats),
                                rownames(verstats.lag)), ] <- current.vstats
