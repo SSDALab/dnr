@@ -10,14 +10,46 @@
 ##' VertexFit: Output from regEngine. \cr
 ##' VertexStats: Subsetted vertex stats matrix. \cr
 ##' VertexStatsFull: Full matrix of vertex stats.
+##' @examples
+##' nvertexstats <- 9
+##' maxLag = 3
+##' VertexLag = rep(1, maxLag)
+##' VertexLagMatrix <- matrix(0, maxLag, nvertexstats)
+##' VertexLagMatrix[, c(4, 7)] <- 1
+##' VertexLagMatrix[c(2,3),7] <- 0
+##' getWeekend <- function(z){
+##'     weekends <- c("Saturday", "Sunday")
+##'     if(!network::is.network(z)){
+##'         if(is.na(z)) return(NA)
+##'     } else {
+##'          zDay <- get.network.attribute(z, attrname = "day")
+##'          out <- ifelse(zDay %in% weekends, 1, 0)
+##'          return(out)   
+##'     }
+##' }
+##' 
+##' ## for(i in 1:31) print(getWeekend(beach[[i]]))
+##' ## generate a vector of network level exogenous variable
+##' dayClass <- numeric(length(beach))
+##' for(i in seq_along(dayClass)) {
+##'     dayClass[i] <- getWeekend(beach[[i]])
+##' }
+##' out <- paramVertexOnly(InputNetwork = beach,
+##'                        maxLag = 3,
+##'                        VertexStatsvec = rep(1, nvertexstats),
+##'                        VertexLag = rep(1, maxLag),
+##'                        VertexLagMatrix = VertexLagMatrix,
+##'                        dayClass = dayClass)
 ##' @author Abhirup
 ##' @export
+
 paramVertexOnly <- function(InputNetwork,
                             VertexStatsvec = rep(1, nvertexstats),
                             maxLag,
                             VertexLag = rep(1, maxLag),
                             VertexLagMatrix = matrix(1, maxLag,
                                                      length(VertexStatsvec)),
+                            dayClass = NA,
                             regMethod = "bayesglm"){
     gengroup <- function(input_network,group,net1){
         Vmax = input_network;
@@ -104,6 +136,7 @@ paramVertexOnly <- function(InputNetwork,
 
     ## Remove networks from InputNetowrk that are NA.
     InputNetwork <- rmNAnetworks(InputNetwork)
+    dayClass <- na.omit(dayClass)
     netlength <- length(InputNetwork)
     Vunion <- unique(unlist(lapply(InputNetwork, network.vertex.names.1)))
     Vunion <- na.omit(Vunion)
@@ -147,6 +180,12 @@ paramVertexOnly <- function(InputNetwork,
             vstats.current <- cbind(vstats.current, verstats.lag)
         }
         net.current <- InputNetwork[[i + maxLag]]
+
+        if(sum(!is.na(dayClass)) > 0) {
+            ## we add network level exogenous variable here.
+            day.current <- dayClass[i + maxLag]
+            xlags.current <- cbind(xlags.current, day.current)
+        }
         y.current <- numeric(length(Vunion))
         current.vnames <- network.vertex.names.1(net.current)
         y.current[match(current.vnames, Vunion)] <- 1
@@ -156,10 +195,11 @@ paramVertexOnly <- function(InputNetwork,
         x.vstats <- rbind(x.vstats, vstats.current)
     }
 
-    for(i in seq_len(NCOL(x.Nets))){
+    for(i in seq_len(NCOL(x.Nets) - 1)){
         colnames(x.Nets)[i] <- paste0("lag", i, sep = "")
     }
-
+    colnames(x.Nets)[ncol(x.Nets)] <- "Day"
+    
     cnames <- numeric(ncol(x.vstats))
     for(i in seq_len(maxLag)){
         for(j in seq_len(nvertexstats)){
@@ -176,6 +216,7 @@ paramVertexOnly <- function(InputNetwork,
     colnames(XYdata)[1] <- "y"
     ## subset
     VertexLagvec <- c(t(VertexLagMatrix))
+    if(sum(!is.na(dayClass)) > 0) VertexLagvec <- c(1, VertexLagvec)
     if(maxLag > 1) VertexLagvec <- c(VertexLag, VertexLagvec)
     VertexLagvec <- c(1, VertexLagvec)
     VertexLagvec <- VertexLagvec == 1
