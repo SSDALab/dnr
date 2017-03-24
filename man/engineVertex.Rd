@@ -7,10 +7,11 @@
 engineVertex(InputNetwork, numSim, maxLag, VertexStatsvec = rep(1,
   nvertexstats), VertexLag = rep(1, maxLag), VertexLagMatrix = matrix(1,
   maxLag, length(VertexStatsvec)), VertexModelGroup = NA,
-  VertexAttLag = rep(1, maxLag), EdgeModelTerms, EdgeModelFormula,
-  EdgeGroup = NA, EdgeIntercept = c("edges"), EdgeExvar = NA,
-  EdgeLag = rep(1, maxLag), EdgeLagMatrix = matrix(1, maxLag,
-  length(EdgeModelTerms)), regMethod = "bayesglm", paramout = TRUE)
+  VertexAttLag = rep(1, maxLag), dayClassObserved = NA,
+  dayClassFuture = NA, EdgeModelTerms, EdgeModelFormula, EdgeGroup = NA,
+  EdgeIntercept = c("edges"), EdgeExvar = NA, EdgeLag = rep(1, maxLag),
+  EdgeLagMatrix = matrix(1, maxLag, length(EdgeModelTerms)),
+  regMethod = "bayesglm", paramout = TRUE)
 }
 \arguments{
 \item{InputNetwork}{List of input networks}
@@ -28,6 +29,10 @@ engineVertex(InputNetwork, numSim, maxLag, VertexStatsvec = rep(1,
 \item{VertexModelGroup}{Group term for vertex model.}
 
 \item{VertexAttLag}{Lag vector for group term for vertex.}
+
+\item{dayClassObserved}{Observed day class.}
+
+\item{dayClassFuture}{Dayclass vector for future, must be of size numsim.}
 
 \item{EdgeModelTerms}{Edge Model terms}
 

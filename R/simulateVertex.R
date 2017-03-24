@@ -7,6 +7,8 @@
 ##' @param VertexLagMatrix matrix of lags for vertex stats.
 ##' @param VertexModelGroup Group term for vertex model.
 ##' @param VertexAttLag Lag vector for group term for vertex.
+##' @param dayClassObserved Observed day class.
+##' @param dayClassFuture Dayclass vector for future, must be of size numsim.
 ##' @param EdgeModelTerms Edge Model terms
 ##' @param EdgeModelFormula Edge model formula
 ##' @param EdgeGroup edge group term
@@ -56,6 +58,8 @@ engineVertex <- function(InputNetwork,
                                                   length(VertexStatsvec)),
                          VertexModelGroup = NA,
                          VertexAttLag = rep(1, maxLag),
+                         dayClassObserved = NA,
+                         dayClassFuture = NA,
                          EdgeModelTerms,
                          EdgeModelFormula,
                          EdgeGroup = NA,
@@ -67,6 +71,7 @@ engineVertex <- function(InputNetwork,
                          regMethod = "bayesglm",
                          paramout = TRUE){
     InputNetwork <- rmNAnetworks(InputNetwork)
+    dayClassObserved <- na.omit(dayClassObserved)
     Vunion <- unique(unlist(lapply(InputNetwork, network.vertex.names.1)))
     netlength <- length(InputNetwork)
     repfac <- netlength - maxLag
@@ -91,6 +96,7 @@ engineVertex <- function(InputNetwork,
                                  VertexLagMatrix = VertexLagMatrix,
                                  VertexModelGroup = VertexModelGroup,
                                  VertexAttLag = VertexAttLag,
+                                 dayClass = dayClassObserved,
                                  EdgeModelTerms = EdgeModelTerms,
                                  EdgeModelFormula = EdgeModelFormula,
                                  EdgeGroup = EdgeGroup,
@@ -111,6 +117,11 @@ engineVertex <- function(InputNetwork,
         }
         Vstats.smooth <- as.matrix(Vstats.smooth)/repfac
         Vertex.predictors <- Vstats.smooth %*% VertexCoeffs
+
+        ## fix dayClass, if Day is present
+        if(sum(!is.na(dayClassObserved)) > 0) {
+            Vstats.smooth[, "Day"] <- dayClassFuture[simcount]
+        }
 
         ## generate vertices:
 
@@ -158,12 +169,12 @@ engineVertex <- function(InputNetwork,
         ## get vertex names in newNet
         ## match with positions in Vunion
         vertexTodelete <- which(Vertex.new == 0)
-        newNet <- delete.vertices(newNet.tmp, vertexTodelete)
+        newNet <- network::delete.vertices(newNet.tmp, vertexTodelete)
 
         simulatedNetworks[[simcount]] <- newNet
         ## Let InputNetwork grow, no one dies.
         InputNetwork[[netlength + simcount]] <- newNet 
-
+        dayClassObserved[netlength + simcount] <- dayClassFuture[simcount]
         ## parameters time series
         EdgeParameters[[simcount]] <- Out.param$EdgeCoef
         VertexParameters[[simcount]] <- Out.param$VertexCoef
