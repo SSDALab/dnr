@@ -6,7 +6,7 @@
 \usage{
 paramVertexOnly(InputNetwork, VertexStatsvec = rep(1, nvertexstats), maxLag,
   VertexLag = rep(1, maxLag), VertexLagMatrix = matrix(1, maxLag,
-  length(VertexStatsvec)), regMethod = "bayesglm")
+  length(VertexStatsvec)), dayClass = NA, regMethod = "bayesglm")
 }
 \arguments{
 \item{InputNetwork}{Input network list.}
@@ -20,6 +20,8 @@ paramVertexOnly(InputNetwork, VertexStatsvec = rep(1, nvertexstats), maxLag,
 \item{VertexLagMatrix}{Binary matrix indicating lagged vertex statistics in
 the model.}
 
+\item{dayClass}{Any network level present time attribute vector. Here used to indicate week/weeked as 0/1.}
+
 \item{regMethod}{one of "glm", "glmnet", "bayesglm"}
 }
 \value{
@@ -30,6 +32,37 @@ VertexStatsFull: Full matrix of vertex stats.
 }
 \description{
 Parameter estimation for Vertex model only for a list of dynamic networks.
+}
+\examples{
+nvertexstats <- 9
+maxLag = 3
+VertexLag = rep(1, maxLag)
+VertexLagMatrix <- matrix(0, maxLag, nvertexstats)
+VertexLagMatrix[, c(4, 7)] <- 1
+VertexLagMatrix[c(2,3),7] <- 0
+getWeekend <- function(z){
+    weekends <- c("Saturday", "Sunday")
+    if(!network::is.network(z)){
+        if(is.na(z)) return(NA)
+    } else {
+         zDay <- get.network.attribute(z, attrname = "day")
+         out <- ifelse(zDay \%in\% weekends, 1, 0)
+         return(out)   
+    }
+}
+
+## for(i in 1:31) print(getWeekend(beach[[i]]))
+## generate a vector of network level exogenous variable
+dayClass <- numeric(length(beach))
+for(i in seq_along(dayClass)) {
+    dayClass[i] <- getWeekend(beach[[i]])
+}
+out <- paramVertexOnly(InputNetwork = beach,
+                       maxLag = 3,
+                       VertexStatsvec = rep(1, nvertexstats),
+                       VertexLag = rep(1, maxLag),
+                       VertexLagMatrix = VertexLagMatrix,
+                       dayClass = dayClass)
 }
 \author{
 Abhirup

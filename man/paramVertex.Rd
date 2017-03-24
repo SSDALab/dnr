@@ -7,7 +7,7 @@
 paramVertex(InputNetwork, VertexStatsvec = rep(1, nvertexstats), maxLag,
   VertexLag = rep(1, maxLag), VertexLagMatrix = matrix(1, maxLag,
   length(VertexStatsvec)), VertexModelGroup = NA, VertexAttLag = rep(1,
-  maxLag), EdgeModelTerms, EdgeModelFormula, EdgeGroup,
+  maxLag), dayClass = NA, EdgeModelTerms, EdgeModelFormula, EdgeGroup,
   EdgeIntercept = c("edges"), EdgeExvar = NA, EdgeLag = rep(1, maxLag),
   EdgeLagMatrix = matrix(1, maxLag, length(EdgeModelTerms)),
   regMethod = "bayesglm", paramout = FALSE)
@@ -26,6 +26,8 @@ paramVertex(InputNetwork, VertexStatsvec = rep(1, nvertexstats), maxLag,
 \item{VertexModelGroup}{Grouping term for vertex model. Must be from vertex attribute list.}
 
 \item{VertexAttLag}{Lag vector for vertex group terms. Of length maxLag.}
+
+\item{dayClass}{Any network level present time attribute vector. Here used to indicate week/weeked as 0/1.}
 
 \item{EdgeModelTerms}{Model terms in edge model.}
 

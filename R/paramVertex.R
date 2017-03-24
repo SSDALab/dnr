@@ -7,6 +7,7 @@
 ##' @param VertexLagMatrix binary matrix of size maxLag x 8.
 ##' @param VertexModelGroup Grouping term for vertex model. Must be from vertex attribute list.
 ##' @param VertexAttLag Lag vector for vertex group terms. Of length maxLag.
+##' @param dayClass Any network level present time attribute vector. Here used to indicate week/weeked as 0/1.
 ##' @param EdgeModelTerms Model terms in edge model.
 ##' @param EdgeModelFormula Model formula in edge model.
 ##' @param EdgeGroup Group terms in edge model.
@@ -59,6 +60,7 @@ paramVertex <- function(InputNetwork,
                                                  length(VertexStatsvec)),
                         VertexModelGroup = NA,
                         VertexAttLag = rep(1, maxLag),
+                        dayClass = NA,
                         EdgeModelTerms,
                         EdgeModelFormula,
                         EdgeGroup,
@@ -223,6 +225,7 @@ paramVertex <- function(InputNetwork,
     
     ## Remove networks from InputNetowrk that are NA.
     InputNetwork <- rmNAnetworks(InputNetwork)
+    dayClass <- na.omit(dayClass)    
     netlength <- length(InputNetwork)
     Vunion <- unique(unlist(lapply(InputNetwork, network.vertex.names.1)))
     Vunion <- na.omit(Vunion)
@@ -277,6 +280,12 @@ paramVertex <- function(InputNetwork,
 
         }
         net.current <- InputNetwork[[i + maxLag]]
+        if(sum(!is.na(dayClass)) > 0) {
+            ## we add network level exogenous variable here.
+            day.current <- dayClass[i + maxLag]
+            xlags.current <- cbind(xlags.current, day.current)
+        }
+        
         y.current <- numeric(length(Vunion))
         current.vnames <- network.vertex.names.1(net.current)
         y.current[match(current.vnames, Vunion)] <- 1
@@ -291,9 +300,10 @@ paramVertex <- function(InputNetwork,
 
     }
 
-    for(i in seq_len(NCOL(x.Nets))){
+    for(i in seq_len(NCOL(x.Nets) - 1)){
         colnames(x.Nets)[i] <- paste0("lag", i, sep = "")
     }
+    colnames(x.Nets)[ncol(x.Nets)] <- "Day"    
 ###############################
     if(!is.na(VertexModelGroup)){
         for(i in seq_len(NCOL(x.vatts))){
@@ -321,6 +331,7 @@ paramVertex <- function(InputNetwork,
     colnames(XYdata)[1] <- "y"
     ## subset
     VertexLagvec <- c(t(VertexLagMatrix))
+    if(sum(!is.na(dayClass)) > 0) VertexLagvec <- c(1, VertexLagvec)
     if(maxLag > 1) {
         if(!is.na(VertexModelGroup)){
             VertexLagvec <-
