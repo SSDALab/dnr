@@ -12,6 +12,7 @@
 ##' @param EdgeModelFormula Model formula in edge model.
 ##' @param EdgeGroup Group terms in edge model.
 ##' @param EdgeIntercept Intercept for edge model.
+##' @param EdgeNetparam Network level parameter for edge model (currentyly only supported parameter is current network size).
 ##' @param EdgeExvar Extraneous variable for edge model.
 ##' @param EdgeLag binary vector of length maxLag.
 ##' @param EdgeLagMatrix binary matrix of dim maxLag x length(EdgeModelTerms)
@@ -49,6 +50,7 @@
 ##'                    EdgeModelFormula = NA,
 ##'                    EdgeGroup = NA,
 ##'                    EdgeIntercept = c("edges"),
+##'                    EdgeNetparam = c("logSize"),
 ##'                    paramout = TRUE)
 
 
@@ -65,6 +67,7 @@ paramVertex <- function(InputNetwork,
                         EdgeModelFormula,
                         EdgeGroup,
                         EdgeIntercept = c("edges"),
+                        EdgeNetparam = NA,
                         EdgeExvar = NA,
                         EdgeLag = rep(1, maxLag),
                         EdgeLagMatrix = matrix(1, maxLag,
@@ -394,8 +397,26 @@ paramVertex <- function(InputNetwork,
                 csmodel <- cbind(csmodel, edgeLag.tmp);
             }
         }
-                                        #fit the lag terms
-                                        #Comment: Counting down.
+
+        ## fit EdgeNetparam terms (only supported term is logSize)
+        ## In future, more terms can be added
+        if(!is.na(EdgeNetparam)) {
+            if("logSize" %in% EdgeNetparam) {
+                if(gmode == "digraph"){
+                    currNetSize <- rep(netsize.window,
+                                       netsize.window*(netsize.window - 1))
+                    logCurrNetSize <- log(currNetSize + 1e-10)
+                } else {
+                    currNetSize <- rep(netsize.window,
+                                       netsize.window*(netsize.window - 1)/2)
+                    logCurrNetSize <- log(currNetSize + 1e-10)
+                }
+                csmodel <- cbind(csmodel, logCurrNetSize)
+            }
+        }
+
+        ## fit the lag terms
+        ## Comment: Counting down.
         if(maxLag > 1){
             if(gmode=='digraph'){
                 lagstats <- matrix(0, ncol=maxLag, nrow=netsize.window*(netsize.window-1))
@@ -467,3 +488,4 @@ paramVertex <- function(InputNetwork,
                 VertexStatsFull = XYdata,
                 VertexFit = VertexRegout))
 }
+

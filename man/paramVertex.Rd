@@ -8,9 +8,9 @@ paramVertex(InputNetwork, VertexStatsvec = rep(1, nvertexstats), maxLag,
   VertexLag = rep(1, maxLag), VertexLagMatrix = matrix(1, maxLag,
   length(VertexStatsvec)), VertexModelGroup = NA, VertexAttLag = rep(1,
   maxLag), dayClass = NA, EdgeModelTerms, EdgeModelFormula, EdgeGroup,
-  EdgeIntercept = c("edges"), EdgeExvar = NA, EdgeLag = rep(1, maxLag),
-  EdgeLagMatrix = matrix(1, maxLag, length(EdgeModelTerms)),
-  regMethod = "bayesglm", paramout = FALSE)
+  EdgeIntercept = c("edges"), EdgeNetparam = NA, EdgeExvar = NA,
+  EdgeLag = rep(1, maxLag), EdgeLagMatrix = matrix(1, maxLag,
+  length(EdgeModelTerms)), regMethod = "bayesglm", paramout = FALSE)
 }
 \arguments{
 \item{InputNetwork}{list of networks.}
@@ -36,6 +36,8 @@ paramVertex(InputNetwork, VertexStatsvec = rep(1, nvertexstats), maxLag,
 \item{EdgeGroup}{Group terms in edge model.}
 
 \item{EdgeIntercept}{Intercept for edge model.}
+
+\item{EdgeNetparam}{Network level parameter for edge model (currentyly only supported parameter is current network size).}
 
 \item{EdgeExvar}{Extraneous variable for edge model.}
 
@@ -82,6 +84,7 @@ out <- paramVertex(InputNetwork = beach,
                    EdgeModelFormula = NA,
                    EdgeGroup = NA,
                    EdgeIntercept = c("edges"),
+                   EdgeNetparam = c("logSize"),
                    paramout = TRUE)
 }
 \author{
