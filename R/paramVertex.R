@@ -40,19 +40,39 @@
 ##' VertexLagMatrix[, c(4, 7)] <- 1
 ##' VertexLagMatrix[c(2,3),7] <- 0
 ##' 
+##' getWeekend <- function(z){
+##'     weekends <- c("Saturday", "Sunday")
+##'     if(!network::is.network(z)){
+##'         if(is.na(z)) return(NA)
+##'     } else {
+##'          zDay <- get.network.attribute(z, attrname = "day")
+##'          out <- ifelse(zDay %in% weekends, 1, 0)
+##'          return(out)   
+##'     }
+##' }
+##' 
+##' dayClass <- numeric(length(beach))
+##' for(i in seq_along(dayClass)) {
+##'     dayClass[i] <- getWeekend(beach[[i]])
+##' }
+##' dayClass <- na.omit(dayClass)
+##' 
+##' 
 ##' out <- paramVertex(InputNetwork = beach,
 ##'                    maxLag = 3,
 ##'                    VertexStatsvec = rep(1, nvertexstats),
 ##'                    VertexModelGroup = "regular",
 ##'                    VertexLag = rep(1, maxLag),
 ##'                    VertexLagMatrix = VertexLagMatrix,
+##'                    dayClass = dayClass,
 ##'                    EdgeModelTerms = NA,
 ##'                    EdgeModelFormula = NA,
 ##'                    EdgeGroup = NA,
 ##'                    EdgeIntercept = c("edges"),
 ##'                    EdgeNetparam = c("logSize"),
+##'                    EdgeExvar = NA,
+##'                    EdgeLag = c(1, 1, 0),
 ##'                    paramout = TRUE)
-
 
 paramVertex <- function(InputNetwork,
                         VertexStatsvec = rep(1, nvertexstats),
@@ -397,9 +417,10 @@ paramVertex <- function(InputNetwork,
                 csmodel <- cbind(csmodel, edgeLag.tmp);
             }
         }
-
+###############################
         ## fit EdgeNetparam terms (only supported term is logSize)
         ## In future, more terms can be added
+        ## REMEMBER to update the subsetting section!!
         if(!is.na(EdgeNetparam)) {
             if("logSize" %in% EdgeNetparam) {
                 if(gmode == "digraph"){
@@ -415,6 +436,22 @@ paramVertex <- function(InputNetwork,
             }
         }
 
+        ## We add network level exogenous variables here
+        ## Update the subsetting section also.
+        if(sum(!is.na(dayClass)) > 0) {
+            day.current <- dayClass[i + maxLag]
+            if(gmode == "digraph") {
+                dayEffect <- rep(day.current,
+                                       netsize.window*(netsize.window - 1))
+            } else {
+                dayEffect <- rep(day.current,
+                                       netsize.window*(netsize.window - 1)/2)
+            }
+            csmodel <- cbind(csmodel, dayEffect)
+        }
+
+###############################
+        
         ## fit the lag terms
         ## Comment: Counting down.
         if(maxLag > 1){
@@ -466,7 +503,16 @@ paramVertex <- function(InputNetwork,
     ## subsetting
     if(sum(!is.na(csintercept)) > 0){
         lagvec <- rep(1,NCOL(csintercept))
-    } 
+    }
+    if(sum(!is.na(EdgeExvar)) > 0) {
+        lagvec <- c(lagvec, 1)
+    }
+    if(sum(!is.na(EdgeNetparam)) > 0) {
+        lagvec <- c(lagvec, 1)
+    }
+    if(sum(!is.na(dayClass)) > 0) {
+        lagvec <- c(lagvec, 1)
+    }
     if(sum(!is.na(EdgeModelTerms)) > 0) lagvec <- c(lagvec,t(EdgeLagMatrix))
     if(maxLag > 1) lagvec <- c(lagvec,EdgeLag)
     lagvec <- c(1,lagvec)
