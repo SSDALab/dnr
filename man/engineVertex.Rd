@@ -9,9 +9,9 @@ engineVertex(InputNetwork, numSim, maxLag, VertexStatsvec = rep(1,
   maxLag, length(VertexStatsvec)), VertexModelGroup = NA,
   VertexAttLag = rep(1, maxLag), dayClassObserved = NA,
   dayClassFuture = NA, EdgeModelTerms, EdgeModelFormula, EdgeGroup = NA,
-  EdgeIntercept = c("edges"), EdgeExvar = NA, EdgeLag = rep(1, maxLag),
-  EdgeLagMatrix = matrix(1, maxLag, length(EdgeModelTerms)),
-  regMethod = "bayesglm", paramout = TRUE)
+  EdgeIntercept = c("edges"), EdgeNetparam = NA, EdgeExvar = NA,
+  EdgeLag = rep(1, maxLag), EdgeLagMatrix = matrix(1, maxLag,
+  length(EdgeModelTerms)), regMethod = "bayesglm", paramout = TRUE)
 }
 \arguments{
 \item{InputNetwork}{List of input networks}
@@ -60,11 +60,28 @@ VertexParameterMat: Matrix of Vertex parameters.
 }
 \examples{
 nvertexstats <- 9
-maxLag <- 3
-VertexLag <- rep(1, maxLag)
+maxLag = 3
+VertexLag = rep(1, maxLag)
 VertexLagMatrix <- matrix(0, maxLag, nvertexstats)
 VertexLagMatrix[, c(4, 7)] <- 1
-VertexLagMatrix[c(2, 3), ] <- 1
+VertexLagMatrix[c(2,3),7] <- 0
+
+getWeekend <- function(z){
+    weekends <- c("Saturday", "Sunday")
+    if(!network::is.network(z)){
+        if(is.na(z)) return(NA)
+    } else {
+         zDay <- get.network.attribute(z, attrname = "day")
+         out <- ifelse(zDay \%in\% weekends, 1, 0)
+         return(out)   
+    }
+}
+
+dayClass <- numeric(length(beach))
+for(i in seq_along(dayClass)) {
+    dayClass[i] <- getWeekend(beach[[i]])
+}
+dayClass <- na.omit(dayClass)
 simResult <- engineVertex(InputNetwork = beach,
                           numSim = 5,
                           maxLag = 3,
@@ -73,10 +90,16 @@ simResult <- engineVertex(InputNetwork = beach,
                           VertexAttLag = rep(1, maxLag),
                           VertexLag = rep(1, maxLag),
                           VertexLagMatrix = VertexLagMatrix,
+                          dayClassObserved = dayClass,
+                          dayClassFuture = c(1, 0, 0, 0, 0),
                           EdgeModelTerms = NA,
                           EdgeModelFormula = NA,
                           EdgeGroup = NA,
-                          EdgeIntercept = c("edges")
+                          EdgeIntercept = c("edges"),
+                          EdgeNetparam = c("logSize"),
+                          EdgeExvar = NA,
+                          EdgeLag = c(0, 1, 0),
+                          paramout = TRUE
                           )
 
 }

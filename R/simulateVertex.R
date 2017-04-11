@@ -25,11 +25,28 @@
 ##' @export
 ##'@examples
 ##' nvertexstats <- 9
-##' maxLag <- 3
-##' VertexLag <- rep(1, maxLag)
+##' maxLag = 3
+##' VertexLag = rep(1, maxLag)
 ##' VertexLagMatrix <- matrix(0, maxLag, nvertexstats)
 ##' VertexLagMatrix[, c(4, 7)] <- 1
-##' VertexLagMatrix[c(2, 3), ] <- 1
+##' VertexLagMatrix[c(2,3),7] <- 0
+##' 
+##' getWeekend <- function(z){
+##'     weekends <- c("Saturday", "Sunday")
+##'     if(!network::is.network(z)){
+##'         if(is.na(z)) return(NA)
+##'     } else {
+##'          zDay <- get.network.attribute(z, attrname = "day")
+##'          out <- ifelse(zDay %in% weekends, 1, 0)
+##'          return(out)   
+##'     }
+##' }
+##' 
+##' dayClass <- numeric(length(beach))
+##' for(i in seq_along(dayClass)) {
+##'     dayClass[i] <- getWeekend(beach[[i]])
+##' }
+##' dayClass <- na.omit(dayClass)
 ##' simResult <- engineVertex(InputNetwork = beach,
 ##'                           numSim = 5,
 ##'                           maxLag = 3,
@@ -38,12 +55,18 @@
 ##'                           VertexAttLag = rep(1, maxLag),
 ##'                           VertexLag = rep(1, maxLag),
 ##'                           VertexLagMatrix = VertexLagMatrix,
+##'                           dayClassObserved = dayClass,
+##'                           dayClassFuture = c(1, 0, 0, 0, 0),
 ##'                           EdgeModelTerms = NA,
 ##'                           EdgeModelFormula = NA,
 ##'                           EdgeGroup = NA,
-##'                           EdgeIntercept = c("edges")
+##'                           EdgeIntercept = c("edges"),
+##'                           EdgeNetparam = c("logSize"),
+##'                           EdgeExvar = NA,
+##'                           EdgeLag = c(0, 1, 0),
+##'                           paramout = TRUE
 ##'                           )
-##'
+##' 
 ##' @author Abhirup
 
 
@@ -64,6 +87,7 @@ engineVertex <- function(InputNetwork,
                          EdgeModelFormula,
                          EdgeGroup = NA,
                          EdgeIntercept = c("edges"),
+                         EdgeNetparam = NA,
                          EdgeExvar = NA,
                          EdgeLag = rep(1, maxLag),
                          EdgeLagMatrix = matrix(1, maxLag,
@@ -101,13 +125,13 @@ engineVertex <- function(InputNetwork,
                                  EdgeModelFormula = EdgeModelFormula,
                                  EdgeGroup = EdgeGroup,
                                  EdgeIntercept = EdgeIntercept,
+                                 EdgeNetparam = EdgeNetparam,
                                  EdgeExvar = EdgeExvar,
                                  EdgeLag = EdgeLag,
                                  EdgeLagMatrix = EdgeLagMatrix,
                                  regMethod = regMethod,
                                  paramout = paramout)
         XYdata <- Out.param$Vstats[, -1]
-        InputMPLEmat <- Out.param$Edgemplemat
         VertexCoeffs <- Out.param$VertexCoef
         ## check if nrows of XYdata is multiple of length(Vunion)
         if(nrow(XYdata) %% length(Vunion) != 0) stop("Wrong dimension of XYdata")
@@ -138,7 +162,12 @@ engineVertex <- function(InputNetwork,
             smmpleMat <- smmpleMat + InputMPLEmat[(((i-1)*nEdges+1):(i*nEdges)), ]
         }
         EdgeCoef <- Out.param$EdgeCoef
-        smmpleMat <- smmpleMat/repfac
+        ## name matching for updating the predictors.
+        colnames(smmpleMat) <- names(EdgeCoef)
+        ## list of predictors that needs updating: dayEffect
+        smmpleMat[, "dayEffect"] <- dayClassFuture[simcount]
+        
+        smmpleMat <- as.matrix(smmpleMat/repfac)
         inputPred <- smmpleMat %*% EdgeCoef
         ## create an empty full sized network
         adjUnion <- matrix(0, nv, nv)
