@@ -165,8 +165,9 @@ engineVertex <- function(InputNetwork,
         ## name matching for updating the predictors.
         colnames(smmpleMat) <- names(EdgeCoef)
         ## list of predictors that needs updating: dayEffect
-        smmpleMat[, "dayEffect"] <- dayClassFuture[simcount]
-        
+        if(!is.na(dayClassFuture)){
+            smmpleMat[, "dayEffect"] <- dayClassFuture[simcount]
+        }
         smmpleMat <- as.matrix(smmpleMat/repfac)
         inputPred <- smmpleMat %*% EdgeCoef
         ## create an empty full sized network

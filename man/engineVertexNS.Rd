@@ -7,8 +7,9 @@
 engineVertexNS(InputNetwork, numSim, maxLag, VertexStatsvec = rep(1,
   nvertexstats), VertexLag = rep(1, maxLag), VertexLagMatrix = matrix(1,
   maxLag, length(VertexStatsvec)), VertexModelGroup = NA,
-  VertexAttLag = rep(1, maxLag), EdgeModelTerms, EdgeModelFormula,
-  EdgeGroup = NA, EdgeIntercept = c("edges"), EdgeExvar = NA,
+  VertexAttLag = rep(1, maxLag), dayClassObserved = NA,
+  dayClassFuture = NA, EdgeModelTerms, EdgeModelFormula, EdgeGroup = NA,
+  EdgeIntercept = c("edges"), EdgeNetparam = NA, EdgeExvar = NA,
   EdgeLag = rep(1, maxLag), EdgeLagMatrix = matrix(1, maxLag,
   length(EdgeModelTerms)), regMethod = "bayesglm", paramout = TRUE)
 }

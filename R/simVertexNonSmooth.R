@@ -52,10 +52,13 @@ engineVertexNS <- function(InputNetwork,
                                                   length(VertexStatsvec)),
                          VertexModelGroup = NA,
                          VertexAttLag = rep(1, maxLag),
+                         dayClassObserved = NA,
+                         dayClassFuture = NA,
                          EdgeModelTerms,
                          EdgeModelFormula,
                          EdgeGroup = NA,
                          EdgeIntercept = c("edges"),
+                         EdgeNetparam = NA,
                          EdgeExvar = NA,
                          EdgeLag = rep(1, maxLag),
                          EdgeLagMatrix = matrix(1, maxLag,
@@ -64,6 +67,7 @@ engineVertexNS <- function(InputNetwork,
                          paramout = TRUE){
     ## setup
     InputNetwork <- rmNAnetworks(InputNetwork)
+    dayClassObserved <- na.omit(dayClassObserved)
     Vunion <- unique(unlist(lapply(InputNetwork, network.vertex.names.1)))
     netlength <- length(InputNetwork)
     repfac <- netlength - maxLag
@@ -89,10 +93,12 @@ engineVertexNS <- function(InputNetwork,
                                  VertexLagMatrix = VertexLagMatrix,
                                  VertexModelGroup = VertexModelGroup,
                                  VertexAttLag = VertexAttLag,
+                                 dayClass = dayClassObserved,
                                  EdgeModelTerms = EdgeModelTerms,
                                  EdgeModelFormula = EdgeModelFormula,
                                  EdgeGroup = EdgeGroup,
                                  EdgeIntercept = EdgeIntercept,
+                                 EdgeNetparam = EdgeNetparam,
                                  EdgeExvar = EdgeExvar,
                                  EdgeLag = EdgeLag,
                                  EdgeLagMatrix = EdgeLagMatrix,
@@ -117,6 +123,13 @@ engineVertexNS <- function(InputNetwork,
 
         ## Instead of smoothing, we use the last block of XYdata
         Vertex.predictors <- as.matrix(XYdata[(((repfac - 1)*nv + 1):(repfac * nv)), ]) %*% VertexCoeffs
+
+        ## fix dayClass, if Day is present
+        if(sum(!is.na(dayClassObserved)) > 0) {
+            Vstats.smooth[, "Day"] <- dayClassFuture[simcount]
+        }
+
+
         ## generate vertices:
 
         Vertex.new <- rbinom(nv, 1, ilogit(Vertex.predictors))
