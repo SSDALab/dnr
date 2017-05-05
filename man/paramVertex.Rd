@@ -66,6 +66,9 @@ VertexFit: Vertex model. \cr
 \description{
 Parameter estimation fro dynamic vertex case. The interface remaining almost identical to the static vertex one.
 }
+\details{
+The Vertex model parameter list is as follows (Freeman degree, In degree, Out degree, Eigen Centrality, Between centrality, Info centrality, Closeness centrality, log k cycles, log size). For more details about the definitions of the terms, please refer to the vertexstats.R file, which implements all of these. The definitions are in sna or igraph.
+}
 \examples{
 nvertexstats <- 9
 maxLag = 3
@@ -111,4 +114,3 @@ out <- paramVertex(InputNetwork = beach,
 \author{
 Abhirup
 }
-

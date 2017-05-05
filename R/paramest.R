@@ -23,7 +23,7 @@
 ##' @examples 
 ##' input_network=rdNets[1:6]
 ##' model.terms=c("triadcensus.003", "triadcensus.012", "triadcensus.102", "triadcensus.021D", "gwesp");
-##' model.formula = net~triadcensus(0:3)+gwesp(alpha=0, fixed=FALSE, cutoff=30)-1;
+##' model.formula = net~triadcensus(0:3)+gwesp(decay=0, fixed=FALSE, cutoff=30)-1;
 ##' graph_mode='digraph';
 ##' group='dnc';
 ##' alpha.glmnet=1
@@ -258,7 +258,7 @@ paramEdge <- function(input_network,model.terms, model.formula,
     }
     #fit model terms
     #Comment: We always count down!
-    if(!is.na(model.formula)){
+    if(sum(!is.na(model.formula)) > 0){
       for(j in k:1){
         formula <- genformula(model.formula,netname = "net.window[[j]]")
         mplemat.tmp  <-  ergmMPLE(formula, output="matrix");
@@ -291,7 +291,7 @@ paramEdge <- function(input_network,model.terms, model.formula,
   }
   #subsetting
   lagvec <- rep(1,NCOL(csintercept))
-  if(!is.na(model.formula)) lagvec <- c(lagvec,t(lagmat))
+  if(sum(!is.na(model.formula)) > 0) lagvec <- c(lagvec,t(lagmat))
   if(k > 1) lagvec <- c(lagvec,ylag)
   lagvec <- c(1,lagvec)
   lagvec <- lagvec==1

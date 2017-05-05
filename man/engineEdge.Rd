@@ -52,7 +52,7 @@ Implementation of simulation engine for dynamic networks using smoothing estimat
 \examples{
 input_network=rdNets[1:6];
 model.terms=c("triadcensus.003", "triadcensus.012", "triadcensus.102", "triadcensus.021D", "gwesp");
-model.formula = net~triadcensus(0:3)+gwesp(alpha=0, fixed=FALSE, cutoff=30)-1;
+model.formula = net~triadcensus(0:3)+gwesp(decay = 0, fixed=FALSE, cutoff=30)-1;
 graph_mode='digraph';
 group='dnc';
 alpha.glmnet=1
@@ -92,4 +92,3 @@ tmp <- engineEdge(start_network=start_network,inputcoeff=inputcoeff,ns=ns,
 \author{
 Abhirup
 }
-

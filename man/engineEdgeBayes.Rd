@@ -99,4 +99,3 @@ alpha.glmnet=alpha.glmnet,
 Theta = Theta)
 }
 }
-

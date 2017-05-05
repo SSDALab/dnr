@@ -27,4 +27,3 @@ General purpose regression engine for the methods bayesglm, glm and glmnet
 \author{
 Abhirup
 }
-

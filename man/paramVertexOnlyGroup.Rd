@@ -58,4 +58,3 @@ summary(Vout1$VertexFit$fit)
 \author{
 Abhirup
 }
-

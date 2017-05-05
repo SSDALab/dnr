@@ -106,4 +106,3 @@ simResult <- engineVertex(InputNetwork = beach,
 \author{
 Abhirup
 }
-

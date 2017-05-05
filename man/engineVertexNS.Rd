@@ -75,4 +75,3 @@ simResult <- engineVertexNS(InputNetwork = beach,
                           EdgeIntercept = c("edges")
                           )
 }
-

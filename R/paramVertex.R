@@ -18,6 +18,7 @@
 ##' @param EdgeLagMatrix binary matrix of dim maxLag x length(EdgeModelTerms)
 ##' @param regMethod Regression method. default: "bayesglm"
 ##' @param paramout T/F Should the parameter estimates be returned?
+##' @details The Vertex model parameter list is as follows (Freeman degree, In degree, Out degree, Eigen Centrality, Between centrality, Info centrality, Closeness centrality, log k cycles, log size). For more details about the definitions of the terms, please refer to the vertexstats.R file, which implements all of these. The definitions are in sna or igraph.
 ##' @return list with following elements: \cr
 ##' EdgeCoef: edge coefficients. \cr
 ##' Edgemplematfull: MPLE matrix from edges. \cr

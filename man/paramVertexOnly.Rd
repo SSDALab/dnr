@@ -67,4 +67,3 @@ out <- paramVertexOnly(InputNetwork = beach,
 \author{
 Abhirup
 }
-
