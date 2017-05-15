@@ -1,0 +1,60 @@
+\title{Dynamic Network Regression}
+\author{Abhirup Mallik} \date{\today}
+  %\VignetteIndexEntry{A Bootstrap Based Multiple Hypothesis Testing Procedure}
+  %\VignetteEngine{knitr::knitr}
+\documentclass[12pt]{article}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage{geometry}
+\geometry{verbose,tmargin=2.5cm,bmargin=2.5cm,lmargin=2.5cm,rmargin=2.5cm}
+%\usepackage{fullpage}
+\usepackage{graphicx}
+\usepackage{setspace}
+\usepackage{verbatim}
+\begin{document}
+%\SweaveOpts{concordance=TRUE}
+\newcommand\myeq{\mathrel{\stackrel{\makebox[0pt]{\mbox{\normalfont\tiny def}}}{=}}}
+
+<<setup, include=FALSE, cache=FALSE>>=
+library(knitr)
+# set global chunk options
+knitr::opts_chunk$set(fig.path='figure/Vignette-', fig.align='center', fig.show='hold',
+                      fig.width='\\linewidth',
+                      fig.height=4,
+                      out.width='\\linewidth')
+options(formatR.arrow=TRUE,width=90)
+@
+
+\maketitle
+
+R package 'dnr' enables the user to fit dynamic network regression models for time variate network data available mostly in social sciences or social network analysis. In this document, we demonstrate the process of building a model to fit a dynamic network data set and using that model for prediction.
+
+We consider the beach data for our demo.
+
+
+
+<<beach, cache=TRUE, eval=TRUE>>=
+suppressMessages(library(dnrDev))
+data(beach)
+
+## get the number of time points
+length(beach)
+## network size (that allows NA)
+network.size.1 <- function(x){
+  if(!network::is.network(x)){
+    if(is.na(x)) return(0)
+  } else return(network::network.size(x))
+}
+
+## get the size of networks at each time point
+sapply(beach, network.size.1)
+@
+
+The beach data is a rapidly changing data set with possible periodic effects. We visualize the adjacency matrix from four time points of the data.
+
+<<beach-fig, cache=TRUE, eval=TRUE>>=
+
+@ 
+
+\end{document}
