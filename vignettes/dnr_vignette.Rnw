@@ -251,16 +251,19 @@ out <- suppressWarnings(paramEdge(input_network,
 out$coef
 @ 
 
-We can use the model chosen to simulate the networks in future time points.
+Here the model formula is an ERGM formula. However, we have also provided the expansion of all the terms in the formula. For example the term 'triadcensus(0:3)' has been expanded out to respective triadcensus terms. The 'group' parameter is a categorical attribute for the vertices. This was present in the dynamic vertex case also. The specification of the intercept term is similar as well. The lag terms and lag dependcy of the parameters are represented with a binary vector or a binary matrix respectively.
+
+We can use the model chosen to simulate the networks in future time points. Here we are simulating $10$ future networks. We have kept the option of specifying the model and the initial network separate unlike the dynamic vertex case. However, using different model than the model fitted on the input network is not recommended as it is easily possible to create examples where these two inputs differ significantly, hurting the performance of the simulation.
 
 <<sim-blog, cache=TRUE, eval=TRUE>>=
-input_network=rdNets[1:6];
-model.terms=c("triadcensus.003", "triadcensus.012", "triadcensus.102", "triadcensus.021D", "gwesp");
-model.formula = net~triadcensus(0:3)+gwesp(decay = 0, fixed=FALSE, cutoff=30)-1;
-graph_mode='digraph';
-group='dnc';
+input_network=rdNets[1:6]
+model.terms=c("triadcensus.003", "triadcensus.012",
+              "triadcensus.102", "triadcensus.021D", "gwesp")
+model.formula = net~triadcensus(0:3)+gwesp(decay = 0, fixed=FALSE, cutoff=30)-1
+graph_mode='digraph'
+group='dnc'
 alpha.glmnet=1
-directed=TRUE;
+directed=TRUE
 method <- 'bayesglm'
 maxlag <- 3
 lambda=NA
@@ -277,6 +280,7 @@ out <- suppressWarnings(paramEdge(input_network,model.terms, model.formula,
                 lambda = NA, method='bayesglm',
                 alpha.glmnet=1))
 #
+
 start_network <- input_network
 inputcoeff <- out$coef$coef
 nvertex <- 47
@@ -298,7 +302,22 @@ tmp <- suppressWarnings(engineEdge(start_network=start_network,inputcoeff=inputc
                      ylag=ylag,
                      lambda = NA, method='bayesglm',
                      alpha.glmnet=alpha.glmnet))
+par(mfrow = c(2,2))
+binaryPlot(input_network[[1]][, ], title = "Time point 6", axlabs = FALSE)
+binaryPlot(tmp$out_network[[1]][, ], title = "Time point 7 (simulated)", axlabs = FALSE)
+binaryPlot(tmp$out_network[[2]][, ], title = "Time point 8 (simulated)", axlabs = FALSE)
+binaryPlot(tmp$out_network[[3]][, ], title = "Time point 9 (simulated)", axlabs = FALSE)
 @ 
+
+As all the coefficients are calculated as a part of the simulation, they are also provided along with the simulated networks. We can plot the time series of the network parameters to see the quality of the simulations.
+
+<<param-ts, cache=TRUE, eval=TRUE, dpi=100>>=
+plot.ts(tmp$coefmat[, 1:10], xy.labels=FALSE,
+        main = "Estimated parameters from simulated networks", cex = 0.8)
+@
+
+
+
 
 \end{document}
 
