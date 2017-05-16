@@ -15,6 +15,11 @@
     "setspace"
     "verbatim")
    (TeX-add-symbols
-    "myeq"))
+    "myeq")
+   (LaTeX-add-labels
+    "sec:analysis-beach-data"
+    "sec:model-fitting-beach"
+    "sec:pred-beach-data"
+    "sec:model-fixed-vertex"))
  :latex)
 

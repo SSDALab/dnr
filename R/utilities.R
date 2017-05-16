@@ -109,12 +109,12 @@ ungvectorize <- function(x,nvertex,gmode){
 }
 
 
-#'binaryPlot
-#' @title binaryPlot
-#' @param x matrix
-#' @param ... title, xlabs, ylabs.
-#' @description Plot for binary matrices, especially adjacency matrices.
-#' @export
+##'binaryPlot
+##' @title binaryPlot
+##' @param x matrix
+##' @param ... title, xlabs, ylabs.
+##' @description Plot for binary matrices, especially adjacency matrices.
+##' @export
 
 binaryPlot <- function(x, axlabs = TRUE,...){
     xmin <- min(x)
