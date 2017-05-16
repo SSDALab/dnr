@@ -309,16 +309,35 @@ binaryPlot(tmp$out_network[[2]][, ], title = "Time point 8 (simulated)", axlabs 
 binaryPlot(tmp$out_network[[3]][, ], title = "Time point 9 (simulated)", axlabs = FALSE)
 @ 
 
+\subsection{Time series of parameter estimates}
+\label{sec:time-seri-param}
+
 As all the coefficients are calculated as a part of the simulation, they are also provided along with the simulated networks. We can plot the time series of the network parameters to see the quality of the simulations.
 
-<<param-ts, cache=TRUE, eval=TRUE, dpi=100>>=
+<<param-ts, cache=TRUE, eval=TRUE>>=
 plot.ts(tmp$coefmat[, 1:10], xy.labels=FALSE,
         main = "Estimated parameters from simulated networks", cex = 0.8)
 @
 
+\subsection{Performance metrics}
+\label{sec:performance-metrics}
 
 
+We also provide some functions for assesing the quality of the simulated networks and make comparisons with holdout set or some other benchmarked networks. Specifically, there are functions for number of triangles, cluster coeficient and expection of degree distribution has been implemented. We report the performance metrics for the input networks as well as the simulated networks for our example on blog data.
 
+<<comparison-metrics, cache=TRUE, eval=TRUE>>=
+perfMetrics <- 
+    cbind(c(sapply(tmp$out_network, function(net) ntriangles(net[, ])),
+            sapply(input_network, function(net) ntriangles(net[, ]))),
+          c(sapply(tmp$out_network, function(net) clustCoef(net[, ])),
+            sapply(input_network, function(net) clustCoef(net[, ]))),
+          c(sapply(tmp$out_network, function(net) expdeg(net[, ])),
+            sapply(input_network, function(net) expdeg(net[, ]))))
+colnames(perfMetrics) <- c("Triangles", "ClustCoefs", "ExpDeg")
+perfMetrics <- data.frame(perfMetrics, row.names = NULL)
+knitr::kable(perfMetrics, digits = 3,
+             caption ="Performance metrics for input and simulated networks.")
+@ 
 \end{document}
 
 

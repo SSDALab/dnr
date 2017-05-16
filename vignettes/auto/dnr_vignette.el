@@ -20,6 +20,8 @@
     "sec:analysis-beach-data"
     "sec:model-fitting-beach"
     "sec:pred-beach-data"
-    "sec:model-fixed-vertex"))
+    "sec:model-fixed-vertex"
+    "sec:time-seri-param"
+    "sec:performance-metrics"))
  :latex)
 
