@@ -1,4 +1,4 @@
-Package: dnrDev
+Package: dnr
 Title: SIMULATE DYNAMIC NETWORKS USING ERGM FAMILY
 Version: 0.3.2
 Authors@R: c(person("Abhirup", "Mallik", email = "malli066@umn.edu",

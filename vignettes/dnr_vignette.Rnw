@@ -37,7 +37,7 @@ First, we consider the beach data for our demo.
 
 
 <<beach, cache=TRUE, eval=TRUE>>=
-suppressMessages(library(dnrDev))
+suppressMessages(library(dnr))
 data(beach)
 
 ## get the number of time points
