@@ -1,3 +1,93 @@
+##' General purpose regression engine for the methods bayesglm, glm and glmnet
+##' @param XYdata matrix with X and Y columns. First column is named as y, other columns are X.
+##' @param method string among ("glm", "glmnet", "bayesglm").
+##' @param regIntercept Logical. Should intercept be included in the model? 
+##' @param lambda for method "glmnet".
+##' @param alpha for "glmnet"
+##' @return list with elements: coef, se, lambda, fit (Coefficients, SE, lambda, if used, fit object.)
+##' @author Abhirup
+
+regEngine <- function(XYdata,
+                      method = "bayesglm",
+                      regIntercept = FALSE,
+                      lambda = NA,
+                      alpha = 1){
+    if(method == "glmnet"){
+        if(is.na(lambda)){
+            mSelect <- glmnet::cv.glmnet(
+                                   data.matrix(XYdata[, -1]),
+                                   as.vector(XYdata[, 1]),
+                                   family = "binomial",
+                                   alpha = alpha)
+            lambda <- mSelect$lambda.min
+        }
+        mFit <- glmnet::glmnet(data.matrix(XYdata[, -1]),
+                               as.vector(XYdata[, 1]),
+                               family = "binomial",
+                               alpha = alpha,
+                               lambda = lambda,
+                               intercept = regIntercept)
+        mCoef <- setNames(as.vector(mFit$beta),
+                          colnames(XYdata[, -1]))
+        mSE <- NA
+        out <- list(coef = mCoef,
+                    se = mSE,
+                    lambda = lambda,
+                    fit = mFit)
+    } else if (method == "glm") {
+        if(regIntercept){
+            mFit <- glm(y ~ ., data = XYdata,
+                        family = binomial(link = "logit"))
+            mSummery <- (summary(mFit))
+            mCoef <- mFit$coefficients[-1]
+            mSE <- numeric(length(mCoef))
+            mSE[is.na(mCoef)] <- 0
+            mSE[!is.na(mCoef)] <- mSummery$coefficients[-1 , 2]
+            names(mSE) <- colnames(XYdata[, -1])
+        } else{
+            mFit <- glm(y ~ . -1, data = XYdata,
+                        family = binomial(link = "logit"))
+                        mSummery <- (summary(mFit))
+            mCoef <- mFit$coefficients
+            mSE <- numeric(length(mCoef))
+            mSE[is.na(mCoef)] <- 0
+            mSE[!is.na(mCoef)] <- mSummery$coefficients[ , 2]
+            names(mSE) <- colnames(XYdata[, -1])
+        }
+        out <- list(coef = mCoef,
+                    se = mSE,
+                    lambda = lambda,
+                    fit = mFit)
+    } else if(method == "bayesglm"){
+        if(regIntercept) {
+            mFit <- arm::bayesglm(y ~., data = XYdata,
+                                  family = binomial(link = "logit"))
+            mSummery <- (summary(mFit))
+            mCoef <- mFit$coefficients[-1]
+            mSE <- numeric(length(mCoef))
+            mSE[is.na(mCoef)] <- 0
+            mSE[!is.na(mCoef)] <- mSummery$coefficients[-1 , 2]
+            names(mSE) <- colnames(XYdata[, -1])
+        } else {
+            mFit <- arm::bayesglm(y ~ . -1, data = XYdata,
+                                  family = binomial(link = "logit"))
+            mSummery <- (summary(mFit))
+            mCoef <- mFit$coefficients
+            mSE <- numeric(length(mCoef))
+            mSE[is.na(mCoef)] <- 0
+            mSE[!is.na(mCoef)] <- mSummery$coefficients[ , 2]
+            names(mSE) <- colnames(XYdata[, -1])
+        }
+        out <- list(coef = mCoef,
+                    se = mSE,
+                    lambda = lambda,
+                    fit = mFit)
+    }
+    return(out)
+}
+
+
+
 
 ungvectorize <- function(x,nvertex,gmode){
   if(gmode == "digraph"){
@@ -19,11 +109,12 @@ ungvectorize <- function(x,nvertex,gmode){
 }
 
 
-#'binaryPlot
-#' @title binaryPlot
-#' @param x matrix
-#' @param ... title, xlabs, ylabs.
-#' @description Plot for binary matrices, especially adjacency matrices.
+##'binaryPlot
+##' @title binaryPlot
+##' @param x matrix
+##' @param ... title, xlabs, ylabs.
+##' @description Plot for binary matrices, especially adjacency matrices.
+##' @export
 
 binaryPlot <- function(x, axlabs = TRUE,...){
     xmin <- min(x)

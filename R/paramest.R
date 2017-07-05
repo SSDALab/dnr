@@ -23,7 +23,7 @@
 ##' @examples 
 ##' input_network=rdNets[1:6]
 ##' model.terms=c("triadcensus.003", "triadcensus.012", "triadcensus.102", "triadcensus.021D", "gwesp");
-##' model.formula = net~triadcensus(0:3)+gwesp(alpha=0, fixed=FALSE, cutoff=30)-1;
+##' model.formula = net~triadcensus(0:3)+gwesp(decay=0, fixed=FALSE, cutoff=30)-1;
 ##' graph_mode='digraph';
 ##' group='dnc';
 ##' alpha.glmnet=1
@@ -36,7 +36,7 @@
 ##' lagmat <- matrix(sample(c(0,1),(maxlag+1)*cdim,replace = TRUE),ncol = cdim)
 ##' ylag <- rep(1,maxlag)
 ##' exvar <- NA
-##' out <- paramest(input_network,model.terms, model.formula,
+##' out <- paramEdge(input_network,model.terms, model.formula,
 ##'                 graph_mode='digraph',group,intercept = c("edges"),exvar=NA,
 ##'                 maxlag = 3,
 ##'                 lagmat = matrix(sample(c(0,1),(maxlag+1)*cdim,
@@ -46,7 +46,7 @@
 ##'                 alpha.glmnet=1)
 ##' 
 
-paramest <- function(input_network,model.terms, model.formula,
+paramEdge <- function(input_network,model.terms, model.formula,
                      graph_mode='digraph',group,intercept = c("edges"),exvar=NA,
                      maxlag = 3,
                      lagmat = matrix(
@@ -60,36 +60,36 @@ paramest <- function(input_network,model.terms, model.formula,
 
 
   gengroup <- function(input_network,group,net1){
-    Vmax = input_network;
+    Vmax <- input_network;
 
-    Vmax.label = get.vertex.attribute(Vmax[[1]], attrname = group);
+    Vmax.label <- get.vertex.attribute(Vmax[[1]], attrname = group);
 
-    Vmax = network.vertex.names(Vmax[[1]])
+    Vmax <- network.vertex.names(Vmax[[1]])
 
-    foo.index = which(Vmax%in%network.vertex.names(net1)==T)
+    foo.index <- which(Vmax%in%network.vertex.names(net1)==T)
 
     if (is.null(group)){
-      grouping = c(rep(1, floor(length(Vmax)/2)), rep(2, length(Vmax)-floor(length(Vmax)/2)))
+      grouping <- c(rep(1, floor(length(Vmax)/2)), rep(2, length(Vmax)-floor(length(Vmax)/2)))
     } else {
-      grouping = Vmax.label
+      grouping <- Vmax.label
     }
-    grouping.sub = grouping[foo.index]
+    grouping.sub <- grouping[foo.index]
 
     if(directed){
-      grouping.perm = expand.grid(unique(grouping.sub),unique(grouping.sub))
-      grouping.perm$indicator = seq_along(grouping.perm[,1])
+      grouping.perm <- expand.grid(unique(grouping.sub),unique(grouping.sub))
+      grouping.perm$indicator <- seq_along(grouping.perm[,1])
 
 
-      grouping.perm.full = expand.grid(unique(grouping),unique(grouping))
-      grouping.perm.full$indicator = seq_along(grouping.perm.full[,1])
+      grouping.perm.full <- expand.grid(unique(grouping),unique(grouping))
+      grouping.perm.full$indicator <- seq_along(grouping.perm.full[,1])
 
-      foo = matrix(,ncol=length(grouping.sub), nrow=length(grouping.sub))
+      foo <- matrix(,ncol=length(grouping.sub), nrow=length(grouping.sub))
 
 
-      grouping.terms = sapply(1:nrow(grouping.perm.full),function(i) paste(group,grouping.perm.full[i,1],grouping.perm.full[i,2],sep=''))
+      grouping.terms <- sapply(1:nrow(grouping.perm.full),function(i) paste(group,grouping.perm.full[i,1],grouping.perm.full[i,2],sep=''))
       for (i in 1:length(grouping.sub)){
         for(j in 1:length(grouping.sub)){
-          foo[i,j]=grouping.perm[,3] [which(grouping.perm[,1]==grouping.sub[i]&grouping.perm[,2]==grouping.sub[j])]
+          foo[i,j]<-grouping.perm[,3] [which(grouping.perm[,1]==grouping.sub[i]&grouping.perm[,2]==grouping.sub[j])]
           #print(i,j)
         }
       }
@@ -105,18 +105,18 @@ paramest <- function(input_network,model.terms, model.formula,
       }
 
 
-      grouping.perm$indicator = seq_along(grouping.perm[,1])
+      grouping.perm$indicator <- seq_along(grouping.perm[,1])
 
       if(length(unique(grouping))>1){
-        grouping.perm.full = data.frame(rbind(t(sapply(unique(grouping), function(x)c(x,x))), t(combn(unique(grouping),2))))
+        grouping.perm.full <- data.frame(rbind(t(sapply(unique(grouping), function(x)c(x,x))), t(combn(unique(grouping),2))))
       } else{
-        grouping.perm.full = data.frame(t(c(unique(grouping),unique(grouping))))
+        grouping.perm.full <- data.frame(t(c(unique(grouping),unique(grouping))))
       }
 
 
-      grouping.perm.full$indicator = seq_along(grouping.perm.full[,1])
+      grouping.perm.full$indicator <- seq_along(grouping.perm.full[,1])
 
-      foo = matrix(,ncol=length(grouping.sub), nrow=length(grouping.sub))
+      foo <- matrix(,ncol=length(grouping.sub), nrow=length(grouping.sub))
 
 
       grouping.terms = sapply(1:nrow(grouping.perm.full),function(i) paste(group,grouping.perm.full[i,1],grouping.perm.full[i,2],sep=''))
@@ -124,11 +124,11 @@ paramest <- function(input_network,model.terms, model.formula,
 
       for (i in 1:length(grouping.sub)){
         for(j in 1:length(grouping.sub)){
-          ind1 = apply(grouping.perm[,1:2],1,function(x) all(x == c(grouping.sub[i], grouping.sub[j]))) + apply(grouping.perm[,1:2],1,function(x) all(x == c(grouping.sub[j], grouping.sub[i])));
-          ind1[which(ind1>0)] = 1;
-          foo[i,j]=grouping.perm[,3][which(ind1!=0)];
+          ind1 <- apply(grouping.perm[,1:2],1,function(x) all(x == c(grouping.sub[i], grouping.sub[j]))) + apply(grouping.perm[,1:2],1,function(x) all(x == c(grouping.sub[j], grouping.sub[i])));
+          ind1[which(ind1>0)] <- 1;
+          foo[i,j]<-grouping.perm[,3][which(ind1!=0)];
 
-          #foo[i,j]=grouping.perm[,3] [which((grouping.perm[,1]==grouping.sub[i]&grouping.perm[,2]==grouping.sub[j])|(grouping.perm[,1]==grouping.sub[j]&grouping.perm[,2]==grouping.sub[i]))]
+          #foo[i,j]<-grouping.perm[,3] [which((grouping.perm[,1]==grouping.sub[i]&grouping.perm[,2]==grouping.sub[j])|(grouping.perm[,1]==grouping.sub[j]&grouping.perm[,2]==grouping.sub[i]))]
           #print(i,j)
         }
       }
@@ -138,7 +138,7 @@ paramest <- function(input_network,model.terms, model.formula,
       }
     }
 
-    grouping.edgecov = sapply(1:nrow(grouping.perm.full), function(x) paste0('edgecov(',grouping.terms[x],')',sep=''))
+    grouping.edgecov <- sapply(1:nrow(grouping.perm.full), function(x) paste0('edgecov(',grouping.terms[x],')',sep=''))
     return(grouping.edgecov)
   }
 
@@ -211,39 +211,6 @@ paramest <- function(input_network,model.terms, model.formula,
 
   ####### End of Formula manipulation ####
 
-
-  edgecoeff <- function(output.edge,method='bayesglm'){
-    if(method == 'glmnet'){
-      if(is.na(lambda)){
-        blogfit.select.edge = glmnet::cv.glmnet(data.matrix(output.edge[,-1]),as.vector(output.edge[,1]), family="binomial", alpha=alpha.glmnet)
-        lambda = blogfit.select.edge$lambda.min
-      }
-
-      blogfit.sim.edge = glmnet::glmnet(data.matrix(output.edge[,-1]),as.vector(output.edge[,1]),family="binomial", alpha=alpha.glmnet, lambda=lambda, intercept=F);
-
-      coef.edge=setNames(as.vector(blogfit.sim.edge$beta), colnames(output.edge)[-1]);
-
-      return(list(coef.edge=coef.edge, lambda=lambda, std.error=NA))
-    } else if (method == 'glm'){
-      blogfit.sim.edge = glm(y~.-1, data= output.edge,family=binomial(logit));
-
-      coef.edge=setNames(as.vector(blogfit.sim.edge$coefficients), colnames(output.edge)[-1]);
-      ## set NA to 0
-      coef.edge[which(is.na(coef.edge))] = 0;
-      return(list(coef.edge=coef.edge, lambda=NA, std.error=summary(blogfit.sim.edge)$coefficients[,2]))
-
-    } else if (method == 'bayesglm'){
-      blogfit.sim.edge = arm::bayesglm(y~.-1, data= output.edge,family=binomial(logit));
-
-      coef.edge=setNames(as.vector(blogfit.sim.edge$coefficients), colnames(output.edge)[-1]);
-      ## set NA to 0
-      coef.edge[which(is.na(coef.edge))] = 0;
-      return(list(coef.edge=coef.edge,lambda=NA, std.error=summary(blogfit.sim.edge)$coefficients[,2]))
-    }
-  }
-
-  ####### End of Edge coeff ####
-
   #initialization
   k <- maxlag + 1
   matout <- NULL
@@ -291,7 +258,7 @@ paramest <- function(input_network,model.terms, model.formula,
     }
     #fit model terms
     #Comment: We always count down!
-    if(!is.na(model.formula)){
+    if(sum(!is.na(model.formula)) > 0){
       for(j in k:1){
         formula <- genformula(model.formula,netname = "net.window[[j]]")
         mplemat.tmp  <-  ergmMPLE(formula, output="matrix");
@@ -324,13 +291,13 @@ paramest <- function(input_network,model.terms, model.formula,
   }
   #subsetting
   lagvec <- rep(1,NCOL(csintercept))
-  if(!is.na(model.formula)) lagvec <- c(lagvec,t(lagmat))
+  if(sum(!is.na(model.formula)) > 0) lagvec <- c(lagvec,t(lagmat))
   if(k > 1) lagvec <- c(lagvec,ylag)
   lagvec <- c(1,lagvec)
   lagvec <- lagvec==1
   #regression
   if(paramout){
-    out <- edgecoeff(matout[,lagvec],method)
+    out <- regEngine(matout[,lagvec],method)
   } else out <- NULL
   #results
   return(list(coef=out,mplematfull=matout,mplemat=matout[,lagvec]))

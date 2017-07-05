@@ -31,6 +31,21 @@ logkCycle <- function(z, gmode) {
     return(d)
 }
 
+## log size
+logSize <- function(z, gmode){
+    if(!network::is.network(z)) {
+        if(is.na(z)) return (NULL)
+    } else if(sum(c(z[ , ])) == 0) {
+        return (NULL)
+    } else {
+        nz <- network.size.1(z)
+        d <- log(nz + 1e-10)
+        d <- rep(d, nz)
+    }
+    return(d)
+}
+
+
 vertexstats <- function(z, gmode){
     if(!network::is.network(z)) {
         if(is.na(z)) return (NULL)
@@ -39,11 +54,13 @@ vertexstats <- function(z, gmode){
     } else {
         out <- cbind(deg(z, gmode), eigenCentrality(z, gmode),
                      BetCentrality(z, gmode), InfoCentrality(z, gmode),
-                     closenessCent(z, gmode), logkCycle(z, gmode))
+                     closenessCent(z, gmode), logkCycle(z, gmode),
+                     logSize(z, gmode))
         colnames(out) <- c("degree", "InDeg", "OutDeg", "Eigencent",
-                           "BetCent", "InfoCent", "CloseCent", "LogCyc")
+                           "BetCent", "InfoCent", "CloseCent",
+                           "LogCyc", "LogSize")
         rownames(out) <- network.vertex.names(z)
     }
     return(out)
 }
-nvertstats <- 8
+nvertexstats <- 9

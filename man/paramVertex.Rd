@@ -4,12 +4,13 @@
 \alias{paramVertex}
 \title{Parameter estimation for Vertex dynamics}
 \usage{
-paramVertex(InputNetwork, VertexStatsvec = rep(1, 8), maxLag,
+paramVertex(InputNetwork, VertexStatsvec = rep(1, nvertexstats), maxLag,
   VertexLag = rep(1, maxLag), VertexLagMatrix = matrix(1, maxLag,
-  length(VertexStatsvec)), EdgeModelTerms, EdgeModelFormula, EdgeGroup,
-  EdgeIntercept = c("edges"), EdgeExvar = NA, EdgeLag = rep(1, maxLag),
-  EdgeLagMatrix = matrix(1, maxLag, length(EdgeModelTerms)),
-  regMethod = "bayesglm", paramout = FALSE)
+  length(VertexStatsvec)), VertexModelGroup = NA, VertexAttLag = rep(1,
+  maxLag), dayClass = NA, EdgeModelTerms, EdgeModelFormula, EdgeGroup,
+  EdgeIntercept = c("edges"), EdgeNetparam = NA, EdgeExvar = NA,
+  EdgeLag = rep(1, maxLag), EdgeLagMatrix = matrix(1, maxLag,
+  length(EdgeModelTerms)), regMethod = "bayesglm", paramout = FALSE)
 }
 \arguments{
 \item{InputNetwork}{list of networks.}
@@ -22,6 +23,12 @@ paramVertex(InputNetwork, VertexStatsvec = rep(1, 8), maxLag,
 
 \item{VertexLagMatrix}{binary matrix of size maxLag x 8.}
 
+\item{VertexModelGroup}{Grouping term for vertex model. Must be from vertex attribute list.}
+
+\item{VertexAttLag}{Lag vector for vertex group terms. Of length maxLag.}
+
+\item{dayClass}{Any network level present time attribute vector. Here used to indicate week/weeked as 0/1.}
+
 \item{EdgeModelTerms}{Model terms in edge model.}
 
 \item{EdgeModelFormula}{Model formula in edge model.}
@@ -29,6 +36,8 @@ paramVertex(InputNetwork, VertexStatsvec = rep(1, 8), maxLag,
 \item{EdgeGroup}{Group terms in edge model.}
 
 \item{EdgeIntercept}{Intercept for edge model.}
+
+\item{EdgeNetparam}{Network level parameter for edge model (currentyly only supported parameter is current network size).}
 
 \item{EdgeExvar}{Extraneous variable for edge model.}
 
@@ -39,35 +48,69 @@ paramVertex(InputNetwork, VertexStatsvec = rep(1, 8), maxLag,
 \item{regMethod}{Regression method. default: "bayesglm"}
 
 \item{paramout}{T/F Should the parameter estimates be returned?}
-
-\item{model.formula:}{user given formula}
-
-\item{netname:}{left side network name to be used. For now, I use "net1"}
 }
 \value{
-list with following elements:
-EdgeCoef: edge coefficients.
-Edgemplematfull: MPLE matrix from edges.
-Edgemplemat: Subsetted MPLE matrix.
-VertexCoef: Coefficients from vertex.
-Vstats: Vertex statistics matrix.
-
-formula to be fed to ergm
+list with following elements: \cr
+EdgeCoef: edge coefficients. \cr
+Edgemplematfull: MPLE matrix from edges. \cr
+Edgemplemat: Subsetted MPLE matrix. \cr
+VertexCoef: Coefficients from vertex. \cr
+Vstats: Vertex statistics matrix.\cr
+EdgePredictor0: Edge predictors with imputations with 0.\cr
+EdgePredictor1: Edge predictors with imputations with 1. \cr
+EdgePredictorNA: Edge predictors with imputations with NA. \cr
+EdgeFit: Edge model. \cr 
+VertexStatsFull: Vertex statistics matrix, full. \cr
+VertexFit: Vertex model. \cr
 }
 \description{
 Parameter estimation fro dynamic vertex case. The interface remaining almost identical to the static vertex one.
 }
+\details{
+The Vertex model parameter list is as follows (Freeman degree, In degree, Out degree, Eigen Centrality, Between centrality, Info centrality, Closeness centrality, log k cycles, log size). For more details about the definitions of the terms, please refer to the vertexstats.R file, which implements all of these. The definitions are in sna or igraph.
+}
 \examples{
+nvertexstats <- 9
+maxLag = 3
+VertexLag = rep(1, maxLag)
+VertexLagMatrix <- matrix(0, maxLag, nvertexstats)
+VertexLagMatrix[, c(4, 7)] <- 1
+VertexLagMatrix[c(2,3),7] <- 0
+
+getWeekend <- function(z){
+    weekends <- c("Saturday", "Sunday")
+    if(!network::is.network(z)){
+        if(is.na(z)) return(NA)
+    } else {
+         zDay <- get.network.attribute(z, attrname = "day")
+         out <- ifelse(zDay \%in\% weekends, 1, 0)
+         return(out)   
+    }
+}
+
+dayClass <- numeric(length(beach))
+for(i in seq_along(dayClass)) {
+    dayClass[i] <- getWeekend(beach[[i]])
+}
+dayClass <- na.omit(dayClass)
+
+
 out <- paramVertex(InputNetwork = beach,
-     maxLag = 3,
-     EdgeModelTerms = c("triadcensus.003", "triadcensus.012",
-      "triadcensus.102","triadcensus.021D"),
-     EdgeModelFormula = net ~ triadcensus(0:3),
-     EdgeGroup = "group1",
-     EdgeIntercept = c("edges"),
-     paramout = TRUE)
+                   maxLag = 3,
+                   VertexStatsvec = rep(1, nvertexstats),
+                   VertexModelGroup = "regular",
+                   VertexLag = rep(1, maxLag),
+                   VertexLagMatrix = VertexLagMatrix,
+                   dayClass = dayClass,
+                   EdgeModelTerms = NA,
+                   EdgeModelFormula = NA,
+                   EdgeGroup = NA,
+                   EdgeIntercept = c("edges"),
+                   EdgeNetparam = c("logSize"),
+                   EdgeExvar = NA,
+                   EdgeLag = c(1, 1, 0),
+                   paramout = TRUE)
 }
 \author{
 Abhirup
 }
-

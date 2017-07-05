@@ -17,4 +17,3 @@ Plot for binary matrices, especially adjacency matrices.
 \details{
 binaryPlot
 }
-

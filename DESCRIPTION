@@ -1,6 +1,6 @@
 Package: dnr
 Title: SIMULATE DYNAMIC NETWORKS USING ERGM FAMILY
-Version: 0.0.1
+Version: 0.3.2
 Authors@R: c(person("Abhirup", "Mallik", email = "malli066@umn.edu",
                   role = c("aut", "cre")),
   		person("Zack", "Almquist", email = "almquist@umn.edu",
@@ -13,7 +13,7 @@ Depends:
     network,
     ergm
 License: GPL-3
-LazyData: true
+LazyData: yes
 Imports:
     ergm,
     network,
@@ -23,4 +23,4 @@ Imports:
     glmnet
 Suggests:
     testthat
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.1

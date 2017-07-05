@@ -1,4 +1,4 @@
-##' Implementation of simulation engine for dynamic networks using smoothing estimates of change statistics.
+##' Implementation of simulation engine for dynamic networks without using smoothing estimates of change statistics.
 ##' @param start_network Initial list of networks 
 ##' @param inputcoeff coefficient vector
 ##' @param ns number of time points for simulation
@@ -15,70 +15,61 @@
 ##' @param method 'bayesglm' by default
 ##' @param alpha.glmnet NA
 ##' @param paramout T/F parameter estimation is returned.
-##' @param Theta = prior probability matrix.
-##' @examples
-##' \dontrun{
-##' startNet <- rdNets[1:50]
-##' model.terms=c("triadcensus.003", "triadcensus.012", "triadcensus.102", "triadcensus.021D", "gwesp")
-##' model.formula = net~triadcensus(0:3)+gwesp(alpha=0, fixed=FALSE, cutoff=30)-1
-##' graph_mode <- 'digraph'
-##' group <- 'dnc'
-##' alpha.glmnet <- 1
+##' @return list:
+##'   out_network: list of predicted networks
+##'   coefmat: if paramout is TRUE, matrix of coefficients at all time.
+##' @author Abhirup
+##' @export
+##' @examples 
+##' input_network=rdNets[1:6];
+##' model.terms=c("triadcensus.003", "triadcensus.012", "triadcensus.102", "triadcensus.021D", "gwesp");
+##' model.formula = net~triadcensus(0:3)+gwesp(decay=0, fixed=FALSE, cutoff=30)-1;
+##' graph_mode='digraph';
+##' group='dnc';
+##' alpha.glmnet=1
+##' directed=TRUE;
 ##' method <- 'bayesglm'
 ##' maxlag <- 3
-##' lambda <- NA
-##' intercept <- "edges"
+##' lambda=NA
+##' intercept = c("edges")
 ##' cdim <- length(model.terms)
 ##' lagmat <- matrix(sample(c(0,1),(maxlag+1)*cdim,replace = TRUE),ncol = cdim)
 ##' ylag <- rep(1,maxlag)
 ##' lagmat[1,] <- rep(0,ncol(lagmat))
-##' 
-##' out.coef <- paramEdge(input_network = startNet,
-##'                 model.terms = model.terms,
-##'                 model.formula = model.formula,
-##'                 graph_mode='digraph',
-##'                 group=group,intercept = intercept,
-##'                 exvar=NA,
-##'                 maxlag = maxlag,
+##' out <- paramEdge(input_network,model.terms, model.formula,
+##'                 graph_mode="digraph",group,intercept = c("edges"),exvar=NA,
+##'                 maxlag = 3,
 ##'                 lagmat = lagmat,
-##'                 ylag = ylag,
+##'                 ylag = rep(1,maxlag),
 ##'                 lambda = NA, method='bayesglm',
 ##'                 alpha.glmnet=1)
-##' 
-##' 
-##' inputcoeff <- out.coef$coef$coef.edge
-##' nvertex <- 47 ##find vertex here
-##' ns <- 1
+##' #
+##' start_network <- input_network
+##' inputcoeff <- out$coef$coef
+##' nvertex <- 47
+##' ns <- 10
 ##' exvar <- NA
-##' for(i in seq_along(startNet)) Theta <- Theta + startNet[[i]][,]
-##' Theta <- Theta/length(startNet)
-##' Theta <- thresh(Theta)
-##' out.bayes <- engineEdgeBayes(start_network=startNet,
-##' inputcoeff=inputcoeff,
-##' ns=ns,
-##' model.terms=model.terms,
-##' model.formula=model.formula,
-##' graph_mode=graph_mode,
-##' group=group,intercept=intercept,
-##' exvar=exvar,
-##' maxlag=maxlag,
-##' lagmat=lagmat,
-##' ylag=ylag,
-##' lambda = NA, method='bayesglm',
-##' alpha.glmnet=alpha.glmnet,
-##' Theta = Theta)
-##'}
-engineEdgeBayes <- function(start_network,inputcoeff,ns,
-                         model.terms, model.formula,
-                         graph_mode,group,intercept,
-                         exvar,
-                         maxlag,
-                         lagmat,
-                         ylag,
-                         lambda = NA, method='bayesglm',
-                         alpha.glmnet,
-                         paramout = TRUE,
-                         Theta = NA){
+##' tmp <- engineEdgeNS(start_network=start_network,inputcoeff=inputcoeff,ns=ns,
+##'                      model.terms=model.terms, model.formula=model.formula,
+##'                      graph_mode=graph_mode,group=group,intercept=intercept,
+##'                      exvar=exvar,
+##'                      maxlag=maxlag,
+##'                      lagmat=lagmat,
+##'                      ylag=ylag,
+##'                      lambda = NA, method='bayesglm',
+##'                      alpha.glmnet=alpha.glmnet)
+##' 
+
+engineEdgeNS <- function(start_network,inputcoeff,ns,
+                          model.terms, model.formula,
+                          graph_mode,group,intercept,
+                          exvar,
+                          maxlag,
+                          lagmat,
+                          ylag,
+                          lambda = NA, method='bayesglm',
+                          alpha.glmnet,
+                          paramout = TRUE){
   nnetinput <- length(start_network)
   repfac <- nnetinput-maxlag
   nvertex <- network.size(start_network[[1]])
@@ -99,18 +90,22 @@ engineEdgeBayes <- function(start_network,inputcoeff,ns,
                      paramout = paramout)
     inputmpleMat <- as.matrix(out1$mplemat[,-1])
     smmpleMat <- matrix(0,nedges,ncol(inputmpleMat))
-    for(i in 1:repfac){
-      smmpleMat <- smmpleMat + inputmpleMat[(((i-1)*nedges+1):(i*nedges)),]
-    }
-    smmpleMat <- smmpleMat/repfac
+    ## for(i in 1:repfac){
+    ##   smmpleMat <- smmpleMat + inputmpleMat[(((i-1)*nedges+1):(i*nedges)),]
+    ## }
+    ## smmpleMat <- smmpleMat/repfac
+
+    ## We do not smooth in this case, we only use the final value of change
+    ## statistics.
+    
+    smmpleMat <-
+        inputmpleMat[(((repfac - 1)*nedges + 1):(repfac*nedges)), ]
+    
     inputpred <- smmpleMat%*%inputcoeff
     
     net.current <- start_network[[1]]
     X_t <- ungvectorize(inputpred,nvertex,graph_mode)
-    Pobs <- ilogit(X_t)
-    alpha.prior <- Theta/(1-Theta)
-    P.post <- (Pobs + alpha.prior)/(alpha.prior/Theta + 1)
-    net.current %n% "X" <- logit(P.post)
+    net.current %n% "X" <- X_t
     net.current <- simulate(ergm(net.current ~ edgecov("X")))
     out_network[[ncount]] <- net.current
     for(i in 1:(nnetinput-1)){

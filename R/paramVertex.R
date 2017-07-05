@@ -5,43 +5,90 @@
 ##' @param maxLag maximum lag, numeric.
 ##' @param VertexLag binary vector of length maxLag.
 ##' @param VertexLagMatrix binary matrix of size maxLag x 8.
+##' @param VertexModelGroup Grouping term for vertex model. Must be from vertex attribute list.
+##' @param VertexAttLag Lag vector for vertex group terms. Of length maxLag.
+##' @param dayClass Any network level present time attribute vector. Here used to indicate week/weeked as 0/1.
 ##' @param EdgeModelTerms Model terms in edge model.
 ##' @param EdgeModelFormula Model formula in edge model.
 ##' @param EdgeGroup Group terms in edge model.
 ##' @param EdgeIntercept Intercept for edge model.
+##' @param EdgeNetparam Network level parameter for edge model (currentyly only supported parameter is current network size).
 ##' @param EdgeExvar Extraneous variable for edge model.
 ##' @param EdgeLag binary vector of length maxLag.
 ##' @param EdgeLagMatrix binary matrix of dim maxLag x length(EdgeModelTerms)
 ##' @param regMethod Regression method. default: "bayesglm"
 ##' @param paramout T/F Should the parameter estimates be returned?
-##' @return list with following elements:
-##' EdgeCoef: edge coefficients.
-##' Edgemplematfull: MPLE matrix from edges.
-##' Edgemplemat: Subsetted MPLE matrix.
-##' VertexCoef: Coefficients from vertex.
-##' Vstats: Vertex statistics matrix.
+##' @details The Vertex model parameter list is as follows (Freeman degree, In degree, Out degree, Eigen Centrality, Between centrality, Info centrality, Closeness centrality, log k cycles, log size). For more details about the definitions of the terms, please refer to the vertexstats.R file, which implements all of these. The definitions are in sna or igraph.
+##' @return list with following elements: \cr
+##' EdgeCoef: edge coefficients. \cr
+##' Edgemplematfull: MPLE matrix from edges. \cr
+##' Edgemplemat: Subsetted MPLE matrix. \cr
+##' VertexCoef: Coefficients from vertex. \cr
+##' Vstats: Vertex statistics matrix.\cr
+##' EdgePredictor0: Edge predictors with imputations with 0.\cr
+##' EdgePredictor1: Edge predictors with imputations with 1. \cr
+##' EdgePredictorNA: Edge predictors with imputations with NA. \cr
+##' EdgeFit: Edge model. \cr 
+##' VertexStatsFull: Vertex statistics matrix, full. \cr
+##' VertexFit: Vertex model. \cr
 ##' @author Abhirup
-##' @examples
-##' out <- paramVertex(InputNetwork = beach,
-##'      maxLag = 3,
-##'      EdgeModelTerms = c("triadcensus.003", "triadcensus.012",
-##'       "triadcensus.102","triadcensus.021D"),
-##'      EdgeModelFormula = net ~ triadcensus(0:3),
-##'      EdgeGroup = "group1",
-##'      EdgeIntercept = c("edges"),
-##'      paramout = TRUE)
 ##' @export
+##' @examples
+##' nvertexstats <- 9
+##' maxLag = 3
+##' VertexLag = rep(1, maxLag)
+##' VertexLagMatrix <- matrix(0, maxLag, nvertexstats)
+##' VertexLagMatrix[, c(4, 7)] <- 1
+##' VertexLagMatrix[c(2,3),7] <- 0
+##' 
+##' getWeekend <- function(z){
+##'     weekends <- c("Saturday", "Sunday")
+##'     if(!network::is.network(z)){
+##'         if(is.na(z)) return(NA)
+##'     } else {
+##'          zDay <- get.network.attribute(z, attrname = "day")
+##'          out <- ifelse(zDay %in% weekends, 1, 0)
+##'          return(out)   
+##'     }
+##' }
+##' 
+##' dayClass <- numeric(length(beach))
+##' for(i in seq_along(dayClass)) {
+##'     dayClass[i] <- getWeekend(beach[[i]])
+##' }
+##' dayClass <- na.omit(dayClass)
+##' 
+##' 
+##' out <- paramVertex(InputNetwork = beach,
+##'                    maxLag = 3,
+##'                    VertexStatsvec = rep(1, nvertexstats),
+##'                    VertexModelGroup = "regular",
+##'                    VertexLag = rep(1, maxLag),
+##'                    VertexLagMatrix = VertexLagMatrix,
+##'                    dayClass = dayClass,
+##'                    EdgeModelTerms = NA,
+##'                    EdgeModelFormula = NA,
+##'                    EdgeGroup = NA,
+##'                    EdgeIntercept = c("edges"),
+##'                    EdgeNetparam = c("logSize"),
+##'                    EdgeExvar = NA,
+##'                    EdgeLag = c(1, 1, 0),
+##'                    paramout = TRUE)
 
 paramVertex <- function(InputNetwork,
-                        VertexStatsvec = rep(1, 8),
+                        VertexStatsvec = rep(1, nvertexstats),
                         maxLag,
                         VertexLag = rep(1, maxLag),
                         VertexLagMatrix = matrix(1, maxLag,
                                                  length(VertexStatsvec)),
+                        VertexModelGroup = NA,
+                        VertexAttLag = rep(1, maxLag),
+                        dayClass = NA,
                         EdgeModelTerms,
                         EdgeModelFormula,
                         EdgeGroup,
                         EdgeIntercept = c("edges"),
+                        EdgeNetparam = NA,
                         EdgeExvar = NA,
                         EdgeLag = rep(1, maxLag),
                         EdgeLagMatrix = matrix(1, maxLag,
@@ -49,40 +96,6 @@ paramVertex <- function(InputNetwork,
                         regMethod = "bayesglm",
                         paramout = FALSE){
     ## Section 1: Vertex model
-    
-    ## regression
-    ## TODO: add options for models with intercept (regression without -1)
-    
-    edgecoeff <- function(output.edge,method='glmnet'){
-        if(method == 'glmnet'){
-            if(is.na(lambda)){
-                blogfit.select.edge = cv.glmnet(data.matrix(output.edge[,-1]),as.vector(output.edge[,1]), family="binomial", alpha=alpha.glmnet)
-                lambda = blogfit.select.edge$lambda.min
-            }
-
-            blogfit.sim.edge = glmnet(data.matrix(output.edge[,-1]),as.vector(output.edge[,1]),family="binomial", alpha=alpha.glmnet, lambda=lambda, intercept=F);
-
-            coef.edge=setNames(as.vector(blogfit.sim.edge$beta), colnames(output.edge)[-1]);
-
-            return(list(coef.edge=coef.edge, lambda=lambda, std.error=NA))
-        } else if (method == 'glm'){
-            blogfit.sim.edge = glm(y~.-1, data= output.edge,family=binomial(logit));
-
-            coef.edge=setNames(as.vector(blogfit.sim.edge$coefficients), colnames(output.edge)[-1]);
-            ## set NA to 0
-            coef.edge[which(is.na(coef.edge))] = 0;
-            return(list(coef.edge=coef.edge, lambda=NA, std.error=summary(blogfit.sim.edge)$coefficients[,2]))
-
-        } else if (method == 'bayesglm'){
-            blogfit.sim.edge = arm::bayesglm(y~.-1, data= output.edge,family=binomial(logit));
-
-            coef.edge=setNames(as.vector(blogfit.sim.edge$coefficients), colnames(output.edge)[-1]);
-            ## set NA to 0
-            coef.edge[which(is.na(coef.edge))] = 0;
-            return(list(coef.edge=coef.edge,lambda=NA, std.error=summary(blogfit.sim.edge)$coefficients[,2]))
-        }
-    }
-
 
     gengroup <- function(input_network,group,net1){
         Vmax = input_network;
@@ -222,13 +235,6 @@ paramVertex <- function(InputNetwork,
         return(formula)
     }
 
-    #'Generate formula for feeding into ergm
-    #'@title genformula
-    #'@param model.formula: user given formula
-    #'@param netname: left side network name to be used. For now, I use "net1"
-    #'@return formula to be fed to ergm
-    #'
-
     genformula <- function(model.formula,netname="net1"){
         term_formula = terms(model.formula);
         term_formula = attr(term_formula, 'term.labels');
@@ -243,6 +249,7 @@ paramVertex <- function(InputNetwork,
     
     ## Remove networks from InputNetowrk that are NA.
     InputNetwork <- rmNAnetworks(InputNetwork)
+    dayClass <- na.omit(dayClass)    
     netlength <- length(InputNetwork)
     Vunion <- unique(unlist(lapply(InputNetwork, network.vertex.names.1)))
     Vunion <- na.omit(Vunion)
@@ -268,10 +275,12 @@ paramVertex <- function(InputNetwork,
     y <- NULL
     x.Nets <- NULL
     x.vstats <- NULL
+    x.vatts <- NULL
     ## construct the response and predictors
     for(i in seq_len(netlength - maxLag)) {
         vstats.current <- NULL
         xlags.current <- NULL
+        veratts.current <- NULL
         for(j in (maxLag:1)) { ## count down
             x.current <- InputNetwork[[i + j - 1]]
             x.lag <- numeric(length(Vunion))
@@ -279,13 +288,28 @@ paramVertex <- function(InputNetwork,
             x.lag[match(current.vnames, Vunion)] <- 1
             xlags.current <- cbind(xlags.current, x.lag)
             current.vstats <- vertexstats(x.current, gmode = "digraph")
-            verstats.lag <- matrix(0, nrow = length(Vunion), ncol = nvertstats)
+            verstats.lag <- matrix(0, nrow = length(Vunion), ncol = nvertexstats)
             rownames(verstats.lag) <- Vunion
             verstats.lag[match(rownames(current.vstats),
                                rownames(verstats.lag)), ] <- current.vstats
             vstats.current <- cbind(vstats.current, verstats.lag)
+
+###############################
+            if(!is.na(VertexModelGroup)){
+                veratts.lag <- numeric(length(Vunion))
+                veratts.lag[match(current.vnames, Vunion)] <-
+                    get.vertex.attribute(x.current, VertexModelGroup)
+                veratts.current <- cbind(veratts.current, veratts.lag)
+            }
+
         }
         net.current <- InputNetwork[[i + maxLag]]
+        if(sum(!is.na(dayClass)) > 0) {
+            ## we add network level exogenous variable here.
+            day.current <- dayClass[i + maxLag]
+            xlags.current <- cbind(xlags.current, day.current)
+        }
+        
         y.current <- numeric(length(Vunion))
         current.vnames <- network.vertex.names.1(net.current)
         y.current[match(current.vnames, Vunion)] <- 1
@@ -293,12 +317,25 @@ paramVertex <- function(InputNetwork,
         y <- c(y, y.current)
         x.Nets <- rbind(x.Nets, xlags.current)
         x.vstats <- rbind(x.vstats, vstats.current)
+###############################
+        if(!is.na(VertexModelGroup)){
+            x.vatts <- rbind(x.vatts, veratts.current)
+        }
+
     }
 
-    for(i in seq_len(NCOL(x.Nets))){
+    for(i in seq_len(NCOL(x.Nets) - 1)){
         colnames(x.Nets)[i] <- paste0("lag", i, sep = "")
     }
+    colnames(x.Nets)[ncol(x.Nets)] <- "Day"    
+###############################
+    if(!is.na(VertexModelGroup)){
+        for(i in seq_len(NCOL(x.vatts))){
+            colnames(x.vatts)[i] <- paste0("attrib", i, sep = "")
+        }
+    }
 
+    
     cnames <- numeric(ncol(x.vstats))
     for(i in seq_len(maxLag)){
         for(j in seq_len(nvertexstats)){
@@ -307,19 +344,31 @@ paramVertex <- function(InputNetwork,
         }
     }
     colnames(x.vstats) <- cnames
-    XYdata <- cbind(y, x.Nets, x.vstats)
-
+    if(!is.na(VertexModelGroup)){
+        XYdata <- cbind(y, x.Nets, x.vatts, x.vstats)
+    } else{
+        XYdata <- cbind(y, x.Nets, x.vstats)
+    }
     
     ## colnames(XYdata) <- NULL
     XYdata <- as.data.frame(XYdata)
     colnames(XYdata)[1] <- "y"
     ## subset
     VertexLagvec <- c(t(VertexLagMatrix))
-    if(maxLag > 1) VertexLagvec <- c(VertexLag, VertexLagvec)
+    if(sum(!is.na(dayClass)) > 0) VertexLagvec <- c(1, VertexLagvec)
+    if(maxLag > 1) {
+        if(!is.na(VertexModelGroup)){
+            VertexLagvec <-
+                c(VertexLag, VertexAttLag,VertexLagvec)
+        } else {
+            VertexLagvec <-
+                c(VertexLag,VertexLagvec)
+        }
+    }
     VertexLagvec <- c(1, VertexLagvec)
     VertexLagvec <- VertexLagvec == 1
     
-    VertexRegout <- edgecoeff(XYdata[, VertexLagvec], method = regMethod)
+    VertexRegout <- regEngine(XYdata[, VertexLagvec], method = regMethod)
 
     ## end of vertex only regression ###
 
@@ -369,8 +418,43 @@ paramVertex <- function(InputNetwork,
                 csmodel <- cbind(csmodel, edgeLag.tmp);
             }
         }
-                                        #fit the lag terms
-                                        #Comment: Counting down.
+###############################
+        ## fit EdgeNetparam terms (only supported term is logSize)
+        ## In future, more terms can be added
+        ## REMEMBER to update the subsetting section!!
+        if(!is.na(EdgeNetparam)) {
+            if("logSize" %in% EdgeNetparam) {
+                if(gmode == "digraph"){
+                    currNetSize <- rep(netsize.window,
+                                       netsize.window*(netsize.window - 1))
+                    logCurrNetSize <- log(currNetSize + 1e-10)
+                } else {
+                    currNetSize <- rep(netsize.window,
+                                       netsize.window*(netsize.window - 1)/2)
+                    logCurrNetSize <- log(currNetSize + 1e-10)
+                }
+                csmodel <- cbind(csmodel, logCurrNetSize)
+            }
+        }
+
+        ## We add network level exogenous variables here
+        ## Update the subsetting section also.
+        if(sum(!is.na(dayClass)) > 0) {
+            day.current <- dayClass[i + maxLag]
+            if(gmode == "digraph") {
+                dayEffect <- rep(day.current,
+                                       netsize.window*(netsize.window - 1))
+            } else {
+                dayEffect <- rep(day.current,
+                                       netsize.window*(netsize.window - 1)/2)
+            }
+            csmodel <- cbind(csmodel, dayEffect)
+        }
+
+###############################
+        
+        ## fit the lag terms
+        ## Comment: Counting down.
         if(maxLag > 1){
             if(gmode=='digraph'){
                 lagstats <- matrix(0, ncol=maxLag, nrow=netsize.window*(netsize.window-1))
@@ -418,22 +502,37 @@ paramVertex <- function(InputNetwork,
     }
 
     ## subsetting
-    lagvec <- rep(1,NCOL(csintercept))
-    if(sum(is.na(EdgeModelTerms)) != 0) lagvec <- c(lagvec,t(EdgeLagMatrix))
+    if(sum(!is.na(csintercept)) > 0){
+        lagvec <- rep(1,NCOL(csintercept))
+    }
+    if(sum(!is.na(EdgeExvar)) > 0) {
+        lagvec <- c(lagvec, 1)
+    }
+    if(sum(!is.na(EdgeNetparam)) > 0) {
+        lagvec <- c(lagvec, 1)
+    }
+    if(sum(!is.na(dayClass)) > 0) {
+        lagvec <- c(lagvec, 1)
+    }
+    if(sum(!is.na(EdgeModelTerms)) > 0) lagvec <- c(lagvec,t(EdgeLagMatrix))
     if(maxLag > 1) lagvec <- c(lagvec,EdgeLag)
     lagvec <- c(1,lagvec)
     lagvec <- lagvec==1
                                         #regression
     if(paramout){
-        out <- edgecoeff(matout[,lagvec],regMethod)
+        out <- regEngine(matout[,lagvec],regMethod)
     } else out <- NULL
 
-    return(list(EdgeCoef=out,
+    return(list(EdgeCoef=out$coef,
+                EdgeFit = out,
                 Edgemplematfull=matout,
                 Edgemplemat=matout[,lagvec],
-                EdgePredictor0 = fullPredictorStack0,
-                EdgePredictor1 = fullPredictorStack1,
-                EdgePredictorNA = fullPredictorStackNA,
-                VertexCoef = VertexRegout,
-                Vstats = XYdata[, VertexLagvec]))
+                EdgePredictor0 = fullPredictorStack0[, lagvec],
+                EdgePredictor1 = fullPredictorStack1[, lagvec],
+                EdgePredictorNA = fullPredictorStackNA[, lagvec],
+                VertexCoef = VertexRegout$coef,
+                Vstats = XYdata[, VertexLagvec],
+                VertexStatsFull = XYdata,
+                VertexFit = VertexRegout))
 }
+

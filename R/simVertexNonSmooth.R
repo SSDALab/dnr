@@ -1,4 +1,4 @@
-##' @title Simulation Engine for dynamic Vertex case.
+##' @title Simulation Engine for dynamic Vertex case without smoothing of estimated predictor matrices.
 ##' @param InputNetwork List of input networks
 ##' @param numSim number of time points to simulate
 ##' @param maxLag maximum Lag
@@ -7,8 +7,6 @@
 ##' @param VertexLagMatrix matrix of lags for vertex stats.
 ##' @param VertexModelGroup Group term for vertex model.
 ##' @param VertexAttLag Lag vector for group term for vertex.
-##' @param dayClassObserved Observed day class.
-##' @param dayClassFuture Dayclass vector for future, must be of size numsim.
 ##' @param EdgeModelTerms Edge Model terms
 ##' @param EdgeModelFormula Edge model formula
 ##' @param EdgeGroup edge group term
@@ -19,35 +17,18 @@
 ##' @param regMethod regression method. "bayesglm" by default
 ##' @param paramout T/F on if regression needs to run.
 ##' @return List with following elements:
-##' SimNetwork: Output Networks
-##' EdgeParameterMat: Matrix of edge parameter
-##' VertexParameterMat: Matrix of Vertex parameters.
+##' SimNetwork: Output Networks \cr
+##' EdgeParameterMat: Matrix of edge parameter \cr
+##' VertexParameterMat: Matrix of Vertex parameters. \cr
 ##' @export
 ##'@examples
 ##' nvertexstats <- 9
-##' maxLag = 3
-##' VertexLag = rep(1, maxLag)
+##' maxLag <- 3
+##' VertexLag <- rep(1, maxLag)
 ##' VertexLagMatrix <- matrix(0, maxLag, nvertexstats)
 ##' VertexLagMatrix[, c(4, 7)] <- 1
-##' VertexLagMatrix[c(2,3),7] <- 0
-##' 
-##' getWeekend <- function(z){
-##'     weekends <- c("Saturday", "Sunday")
-##'     if(!network::is.network(z)){
-##'         if(is.na(z)) return(NA)
-##'     } else {
-##'          zDay <- get.network.attribute(z, attrname = "day")
-##'          out <- ifelse(zDay %in% weekends, 1, 0)
-##'          return(out)   
-##'     }
-##' }
-##' 
-##' dayClass <- numeric(length(beach))
-##' for(i in seq_along(dayClass)) {
-##'     dayClass[i] <- getWeekend(beach[[i]])
-##' }
-##' dayClass <- na.omit(dayClass)
-##' simResult <- engineVertex(InputNetwork = beach,
+##' VertexLagMatrix[c(2, 3), ] <- 1
+##' simResult <- engineVertexNS(InputNetwork = beach,
 ##'                           numSim = 5,
 ##'                           maxLag = 3,
 ##'                           VertexStatsvec = rep(1, nvertexstats),
@@ -55,24 +36,14 @@
 ##'                           VertexAttLag = rep(1, maxLag),
 ##'                           VertexLag = rep(1, maxLag),
 ##'                           VertexLagMatrix = VertexLagMatrix,
-##'                           dayClassObserved = dayClass,
-##'                           dayClassFuture = c(1, 0, 0, 0, 0),
 ##'                           EdgeModelTerms = NA,
 ##'                           EdgeModelFormula = NA,
 ##'                           EdgeGroup = NA,
-##'                           EdgeIntercept = c("edges"),
-##'                           EdgeNetparam = c("logSize"),
-##'                           EdgeExvar = NA,
-##'                           EdgeLag = c(0, 1, 0),
-##'                           paramout = TRUE
+##'                           EdgeIntercept = c("edges")
 ##'                           )
-##' 
-##' @author Abhirup
 
 
-
-
-engineVertex <- function(InputNetwork,
+engineVertexNS <- function(InputNetwork,
                          numSim,
                          maxLag,
                          VertexStatsvec = rep(1, nvertexstats),
@@ -94,6 +65,7 @@ engineVertex <- function(InputNetwork,
                                                 length(EdgeModelTerms)),
                          regMethod = "bayesglm",
                          paramout = TRUE){
+    ## setup
     InputNetwork <- rmNAnetworks(InputNetwork)
     dayClassObserved <- na.omit(dayClassObserved)
     Vunion <- unique(unlist(lapply(InputNetwork, network.vertex.names.1)))
@@ -110,9 +82,10 @@ engineVertex <- function(InputNetwork,
         gmode <- "digraph"
     } else gmode <- "graph"
     
-    
+    ## Loop for simulation
     for(simcount in seq_len(numSim)){
         print(simcount)
+        ## parameter estimation
         Out.param <- paramVertex(InputNetwork = InputNetwork,
                                  VertexStatsvec = VertexStatsvec,
                                  maxLag = maxLag,
@@ -131,21 +104,31 @@ engineVertex <- function(InputNetwork,
                                  EdgeLagMatrix = EdgeLagMatrix,
                                  regMethod = regMethod,
                                  paramout = paramout)
+
+        ## collect output from parameter estimation
         XYdata <- Out.param$Vstats[, -1]
+        InputMPLEmat <- Out.param$Edgemplemat
         VertexCoeffs <- Out.param$VertexCoef
         ## check if nrows of XYdata is multiple of length(Vunion)
-        if(nrow(XYdata) %% length(Vunion) != 0) stop("Wrong dimension of XYdata")
-        Vstats.smooth <- matrix(0, nv, ncol(XYdata))
-        for(i in seq_len(repfac)){
-            Vstats.smooth <- Vstats.smooth + XYdata[(((i - 1)*nv + 1):(i*nv)),]
-        }
-        Vstats.smooth <- as.matrix(Vstats.smooth)/repfac
-        Vertex.predictors <- Vstats.smooth %*% VertexCoeffs
+        if(nrow(XYdata) %% length(Vunion) != 0)
+            stop("Wrong dimension of XYdata")
+
+        ## Smoothing for vertices
+        ## Vstats.smooth <- matrix(0, nv, ncol(XYdata))
+        ## for(i in seq_len(repfac)){
+        ##     Vstats.smooth <- Vstats.smooth + XYdata[(((i - 1)*nv + 1):(i*nv)),]
+        ## }
+        ## Vstats.smooth <- as.matrix(Vstats.smooth)/repfac
+        ## Vertex.predictors <- Vstats.smooth %*% VertexCoeffs
+
+        ## Instead of smoothing, we use the last block of XYdata
+        Vertex.predictors <- as.matrix(XYdata[(((repfac - 1)*nv + 1):(repfac * nv)), ]) %*% VertexCoeffs
 
         ## fix dayClass, if Day is present
         if(sum(!is.na(dayClassObserved)) > 0) {
             Vstats.smooth[, "Day"] <- dayClassFuture[simcount]
         }
+
 
         ## generate vertices:
 
@@ -156,20 +139,21 @@ engineVertex <- function(InputNetwork,
         ## Predict the edges
         InputMPLEmat <- as.matrix(Out.param$EdgePredictor0[, -1])
         nEdges <- ifelse(gmode == "digraph", nv*(nv -1), nv*(nv - 1)/2)
-        repfac <- netlength - maxLag
-        smmpleMat <- matrix(0, nEdges, ncol(InputMPLEmat))
-        for(i in seq_len(repfac)){
-            smmpleMat <- smmpleMat + InputMPLEmat[(((i-1)*nEdges+1):(i*nEdges)), ]
-        }
-        EdgeCoef <- Out.param$EdgeCoef
-        ## name matching for updating the predictors.
-        colnames(smmpleMat) <- names(EdgeCoef)
-        ## list of predictors that needs updating: dayEffect
-        if(!is.na(dayClassFuture)){
-            smmpleMat[, "dayEffect"] <- dayClassFuture[simcount]
-        }
-        smmpleMat <- as.matrix(smmpleMat/repfac)
-        inputPred <- smmpleMat %*% EdgeCoef
+        EdgeCoef <- Out.param$EdgeCoef        
+        ## smoothing for edges
+        ## smmpleMat <- matrix(0, nEdges, ncol(InputMPLEmat))
+        ## for(i in seq_len(repfac)){
+        ##     smmpleMat <- smmpleMat + InputMPLEmat[(((i-1)*nEdges+1):(i*nEdges)), ]
+        ## }
+
+
+        ## psmmpleMat <- smmpleMat/repfac
+        
+        ## Instead of smoothing, use the last block of InputMPLEmat
+        inputPred <-
+            as.matrix(InputMPLEmat[(((repfac-1)*nEdges+1):(repfac*nEdges)), ])%*%
+            EdgeCoef
+        
         ## create an empty full sized network
         adjUnion <- matrix(0, nv, nv)
         rownames(adjUnion) <- Vunion
@@ -199,12 +183,12 @@ engineVertex <- function(InputNetwork,
         ## get vertex names in newNet
         ## match with positions in Vunion
         vertexTodelete <- which(Vertex.new == 0)
-        newNet <- network::delete.vertices(newNet.tmp, vertexTodelete)
+        newNet <- delete.vertices(newNet.tmp, vertexTodelete)
 
         simulatedNetworks[[simcount]] <- newNet
         ## Let InputNetwork grow, no one dies.
         InputNetwork[[netlength + simcount]] <- newNet 
-        dayClassObserved[netlength + simcount] <- dayClassFuture[simcount]
+
         ## parameters time series
         EdgeParameters[[simcount]] <- Out.param$EdgeCoef
         VertexParameters[[simcount]] <- Out.param$VertexCoef
@@ -216,6 +200,3 @@ engineVertex <- function(InputNetwork,
                 EdgeParameterMat = EdgeParameterMat,
                 VertexParameterMat = VertexParameterMat))
 }
-
-
-
