@@ -1,6 +1,6 @@
 # dnr
 
-### Discription
+### Description
 This package provides functions for fitting lagged exponential family models on dynamic network data, simulation from the models and model diagnostics. 
 
 ### Funding
