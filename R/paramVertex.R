@@ -331,7 +331,7 @@ paramVertex <- function(InputNetwork,
 ###############################
     if(!is.na(VertexModelGroup)){
         for(i in seq_len(NCOL(x.vatts))){
-            colnames(x.vatts)[i] <- paste0("attrib", i, sep = "")
+            colnames(x.vatts)[i] <- paste0("attribLag", i, sep = "")
         }
     }
 
@@ -340,7 +340,7 @@ paramVertex <- function(InputNetwork,
     for(i in seq_len(maxLag)){
         for(j in seq_len(nvertexstats)){
             cnames[(i - 1)*nvertexstats + j] <- 
-                paste0("Vstat",j,"Lag",i, sep = ".")
+                paste0(vstatNames[j],"Lag",i, sep = "")
         }
     }
     colnames(x.vstats) <- cnames

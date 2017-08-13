@@ -64,3 +64,13 @@ vertexstats <- function(z, gmode){
     return(out)
 }
 nvertexstats <- 9
+vstatNames <- c(
+    "Degree",
+    "InDegree",
+    "OutDegree",
+    "EigenCentrality",
+    "BetweenCentrality",
+    "InfoCentrality",
+    "CloseCentrality",
+    "LogCycle",
+    "LogSize")
