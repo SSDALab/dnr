@@ -205,7 +205,7 @@ paramVertexOnly <- function(InputNetwork,
     for(i in seq_len(maxLag)){
         for(j in seq_len(nvertexstats)){
             cnames[(i - 1)*nvertexstats + j] <- 
-                paste0("Vstat",j,"Lag",i, sep = ".")
+                paste0(vstatNames[j],"Lag",i, sep = ".")
         }
     }
     colnames(x.vstats) <- cnames
