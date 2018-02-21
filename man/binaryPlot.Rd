@@ -9,6 +9,8 @@ binaryPlot(x, axlabs = TRUE, ...)
 \arguments{
 \item{x}{matrix}
 
+\item{axlabs}{Binary, should the axis labels be shown.}
+
 \item{...}{title, xlabs, ylabs.}
 }
 \description{

@@ -1,4 +1,6 @@
 ##' @title Simulation Engine for dynamic Vertex case.
+##' @description Simulation engine for dynamic networks with variable number of vertices. 
+##' Implements exponential family based hierachical model for vertice and the edges.
 ##' @param InputNetwork List of input networks
 ##' @param numSim number of time points to simulate
 ##' @param maxLag maximum Lag
@@ -13,6 +15,7 @@
 ##' @param EdgeModelFormula Edge model formula
 ##' @param EdgeGroup edge group term
 ##' @param EdgeIntercept edge intercept
+##' @param EdgeNetparam edge network parameter name
 ##' @param EdgeExvar edge extraneous variable
 ##' @param EdgeLag edge Lag vector
 ##' @param EdgeLagMatrix edge lag matrix

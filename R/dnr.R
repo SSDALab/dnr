@@ -1,7 +1,4 @@
-###################################################
-## Documentation for package dnr
-###################################################
-
+#' @keywords internal
 ##' @title dnr: A package for simulating dynamic networks using ERGM family models.
 
 ##' @description

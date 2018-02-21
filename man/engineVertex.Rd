@@ -42,6 +42,8 @@ engineVertex(InputNetwork, numSim, maxLag, VertexStatsvec = rep(1,
 
 \item{EdgeIntercept}{edge intercept}
 
+\item{EdgeNetparam}{edge network parameter name}
+
 \item{EdgeExvar}{edge extraneous variable}
 
 \item{EdgeLag}{edge Lag vector}
@@ -57,6 +59,10 @@ List with following elements:
 SimNetwork: Output Networks
 EdgeParameterMat: Matrix of edge parameter
 VertexParameterMat: Matrix of Vertex parameters.
+}
+\description{
+Simulation engine for dynamic networks with variable number of vertices. 
+Implements exponential family based hierachical model for vertice and the edges.
 }
 \examples{
 nvertexstats <- 9

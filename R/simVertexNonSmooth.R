@@ -1,4 +1,7 @@
 ##' @title Simulation Engine for dynamic Vertex case without smoothing of estimated predictor matrices.
+##' @description Simulation engine for dynamic networks with variable number of vertices. 
+##' Implements exponential family based hierachical model for vertice and the edges. This does not 
+##' implement smoothing for estimated predictor matrices.
 ##' @param InputNetwork List of input networks
 ##' @param numSim number of time points to simulate
 ##' @param maxLag maximum Lag
@@ -7,10 +10,13 @@
 ##' @param VertexLagMatrix matrix of lags for vertex stats.
 ##' @param VertexModelGroup Group term for vertex model.
 ##' @param VertexAttLag Lag vector for group term for vertex.
+##' @param dayClassObserved Observed day class.
+##' @param dayClassFuture Dayclass vector for future, must be of size numsim.
 ##' @param EdgeModelTerms Edge Model terms
 ##' @param EdgeModelFormula Edge model formula
 ##' @param EdgeGroup edge group term
 ##' @param EdgeIntercept edge intercept
+##' @param EdgeNetparam edge network parameter name
 ##' @param EdgeExvar edge extraneous variable
 ##' @param EdgeLag edge Lag vector
 ##' @param EdgeLagMatrix edge lag matrix

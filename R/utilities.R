@@ -112,6 +112,7 @@ ungvectorize <- function(x,nvertex,gmode){
 ##'binaryPlot
 ##' @title binaryPlot
 ##' @param x matrix
+##' @param axlabs Binary, should the axis labels be shown.
 ##' @param ... title, xlabs, ylabs.
 ##' @description Plot for binary matrices, especially adjacency matrices.
 ##' @export

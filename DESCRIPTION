@@ -15,8 +15,6 @@ Depends:
 License: GPL-3
 LazyData: yes
 Imports:
-    ergm,
-    network,
     sna,
     igraph,
     arm,

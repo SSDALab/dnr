@@ -30,6 +30,10 @@ engineVertexNS(InputNetwork, numSim, maxLag, VertexStatsvec = rep(1,
 
 \item{VertexAttLag}{Lag vector for group term for vertex.}
 
+\item{dayClassObserved}{Observed day class.}
+
+\item{dayClassFuture}{Dayclass vector for future, must be of size numsim.}
+
 \item{EdgeModelTerms}{Edge Model terms}
 
 \item{EdgeModelFormula}{Edge model formula}
@@ -37,6 +41,8 @@ engineVertexNS(InputNetwork, numSim, maxLag, VertexStatsvec = rep(1,
 \item{EdgeGroup}{edge group term}
 
 \item{EdgeIntercept}{edge intercept}
+
+\item{EdgeNetparam}{edge network parameter name}
 
 \item{EdgeExvar}{edge extraneous variable}
 
@@ -53,6 +59,11 @@ List with following elements:
 SimNetwork: Output Networks \cr
 EdgeParameterMat: Matrix of edge parameter \cr
 VertexParameterMat: Matrix of Vertex parameters. \cr
+}
+\description{
+Simulation engine for dynamic networks with variable number of vertices. 
+Implements exponential family based hierachical model for vertice and the edges. This does not 
+implement smoothing for estimated predictor matrices.
 }
 \examples{
 nvertexstats <- 9
