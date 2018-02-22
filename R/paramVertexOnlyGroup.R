@@ -94,7 +94,7 @@ paramVertexOnlyGroup <- function(InputNetwork,
             if(!is.na(VertexModelGroup)){
                 veratts.lag <- numeric(length(Vunion))
                 veratts.lag[match(current.vnames, Vunion)] <-
-                    get.vertex.attribute(x.current, VertexModelGroup)
+                    network::get.vertex.attribute(x.current, VertexModelGroup)
                 veratts.current <- cbind(veratts.current, veratts.lag)
             }
         }

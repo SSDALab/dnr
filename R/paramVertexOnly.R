@@ -55,7 +55,7 @@ paramVertexOnly <- function(InputNetwork,
     gengroup <- function(input_network,group,net1){
         Vmax = input_network;
 
-        Vmax.label = get.vertex.attribute(Vmax[[1]], attrname = group);
+        Vmax.label = network::get.vertex.attribute(Vmax[[1]], attrname = group);
 
         Vmax = network.vertex.names(Vmax[[1]])
 
@@ -76,7 +76,7 @@ paramVertexOnly <- function(InputNetwork,
             grouping.perm.full = expand.grid(unique(grouping),unique(grouping))
             grouping.perm.full$indicator = seq_along(grouping.perm.full[,1])
 
-            foo = matrix(,ncol=length(grouping.sub), nrow=length(grouping.sub))
+            foo = matrix(NA,ncol=length(grouping.sub), nrow=length(grouping.sub))
 
 
             grouping.terms = sapply(1:nrow(grouping.perm.full),function(i) paste(group,grouping.perm.full[i,1],grouping.perm.full[i,2],sep=''))
@@ -87,7 +87,9 @@ paramVertexOnly <- function(InputNetwork,
                 }
             }
             for(i in grouping.perm.full$indicator){
-                assign(grouping.terms[i], (foo==grouping.perm.full$indicator[i])*1, env = globalenv())
+              pos <- 1
+              envir = as.environment(pos)
+                assign(grouping.terms[i], (foo==grouping.perm.full$indicator[i])*1, envir = envir)
             }
         } else{
 
@@ -109,7 +111,7 @@ paramVertexOnly <- function(InputNetwork,
 
             grouping.perm.full$indicator = seq_along(grouping.perm.full[,1])
 
-            foo = matrix(,ncol=length(grouping.sub), nrow=length(grouping.sub))
+            foo = matrix(NA,ncol=length(grouping.sub), nrow=length(grouping.sub))
 
 
             grouping.terms = sapply(1:nrow(grouping.perm.full),function(i) paste(group,grouping.perm.full[i,1],grouping.perm.full[i,2],sep=''))
@@ -126,9 +128,11 @@ paramVertexOnly <- function(InputNetwork,
                 }
             }
 
-            for(i in grouping.perm.full$indicator){
-                assign(grouping.terms[i], (foo==grouping.perm.full$indicator[i])*1, env = globalenv())
-            }
+          for(i in grouping.perm.full$indicator){
+            pos <- 1
+            envir = as.environment(pos)
+            assign(grouping.terms[i], (foo==grouping.perm.full$indicator[i])*1, envir = envir)
+          }
         }
 
         grouping.edgecov = sapply(1:nrow(grouping.perm.full), function(x) paste0('edgecov(',grouping.terms[x],')',sep=''))

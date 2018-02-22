@@ -9,7 +9,7 @@ Description: Functions are provided to fit temporal lag models to dynamic
     networks. The models are build on top of ERGM framework. There are
     functions for simulating or forecasting networks for future time points.
 Depends:
-    R (>= 3.1.0),
+    R (>= 3.2.0),
     network,
     ergm
 License: GPL-3

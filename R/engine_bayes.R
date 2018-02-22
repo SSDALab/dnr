@@ -110,7 +110,7 @@ engineEdgeBayes <- function(start_network,inputcoeff,ns,
     Pobs <- ilogit(X_t)
     alpha.prior <- Theta/(1-Theta)
     P.post <- (Pobs + alpha.prior)/(alpha.prior/Theta + 1)
-    net.current %n% "X" <- logit(P.post)
+    net.current %n% "X" <- arm::logit(P.post)
     net.current <- simulate(ergm(net.current ~ edgecov("X")))
     out_network[[ncount]] <- net.current
     for(i in 1:(nnetinput-1)){

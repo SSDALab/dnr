@@ -7,7 +7,7 @@
 paramEdge(input_network, model.terms, model.formula, graph_mode = "digraph",
   group, intercept = c("edges"), exvar = NA, maxlag = 3,
   lagmat = matrix(sample(c(0, 1), (maxlag + 1) * length(model.terms), replace
-  = T), ncol = cdim), ylag = rep(1, maxlag), lambda = NA,
+  = T), ncol = length(model.terms)), ylag = rep(1, maxlag), lambda = NA,
   method = "glmnet", alpha.glmnet = 1, paramout = TRUE)
 }
 \arguments{

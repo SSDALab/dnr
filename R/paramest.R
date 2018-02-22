@@ -52,7 +52,7 @@ paramEdge <- function(input_network,model.terms, model.formula,
                      lagmat = matrix(
                        sample(c(0,1),
                               (maxlag+1)*length(model.terms),
-                                            replace = T),ncol = cdim),
+                                            replace = T),ncol = length(model.terms)),
                      ylag = rep(1,maxlag),
                      lambda = NA, method='glmnet',
                      alpha.glmnet=1,paramout=TRUE){
@@ -62,7 +62,7 @@ paramEdge <- function(input_network,model.terms, model.formula,
   gengroup <- function(input_network,group,net1){
     Vmax <- input_network;
 
-    Vmax.label <- get.vertex.attribute(Vmax[[1]], attrname = group);
+    Vmax.label <- network::get.vertex.attribute(Vmax[[1]], attrname = group);
 
     Vmax <- network.vertex.names(Vmax[[1]])
 
@@ -83,7 +83,7 @@ paramEdge <- function(input_network,model.terms, model.formula,
       grouping.perm.full <- expand.grid(unique(grouping),unique(grouping))
       grouping.perm.full$indicator <- seq_along(grouping.perm.full[,1])
 
-      foo <- matrix(,ncol=length(grouping.sub), nrow=length(grouping.sub))
+      foo <- matrix(NA,ncol=length(grouping.sub), nrow=length(grouping.sub))
 
 
       grouping.terms <- sapply(1:nrow(grouping.perm.full),function(i) paste(group,grouping.perm.full[i,1],grouping.perm.full[i,2],sep=''))
@@ -94,7 +94,9 @@ paramEdge <- function(input_network,model.terms, model.formula,
         }
       }
       for(i in grouping.perm.full$indicator){
-        assign(grouping.terms[i], (foo==grouping.perm.full$indicator[i])*1, env = globalenv())
+        pos <- 1
+        envir = as.environment(pos)
+        assign(grouping.terms[i], (foo==grouping.perm.full$indicator[i])*1, envir = envir)
       }
     } else{
 
@@ -116,7 +118,7 @@ paramEdge <- function(input_network,model.terms, model.formula,
 
       grouping.perm.full$indicator <- seq_along(grouping.perm.full[,1])
 
-      foo <- matrix(,ncol=length(grouping.sub), nrow=length(grouping.sub))
+      foo <- matrix(NA,ncol=length(grouping.sub), nrow=length(grouping.sub))
 
 
       grouping.terms = sapply(1:nrow(grouping.perm.full),function(i) paste(group,grouping.perm.full[i,1],grouping.perm.full[i,2],sep=''))
@@ -134,7 +136,9 @@ paramEdge <- function(input_network,model.terms, model.formula,
       }
 
       for(i in grouping.perm.full$indicator){
-        assign(grouping.terms[i], (foo==grouping.perm.full$indicator[i])*1, env = globalenv())
+        pos <- 1
+        envir = as.environment(pos)
+        assign(grouping.terms[i], (foo==grouping.perm.full$indicator[i])*1, envir = envir)
       }
     }
 
