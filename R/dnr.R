@@ -1,6 +1,9 @@
 #' @keywords internal
 #' @import ergm
 #' @import network
+#' @importFrom graphics axis grid image
+#' @importFrom stats as.formula binomial glm na.omit rbinom setNames simulate terms
+#' @importFrom utils combn
 ##' @title dnr: A package for simulating dynamic networks using ERGM family models.
 
 ##' @description
