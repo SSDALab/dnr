@@ -65,6 +65,7 @@ Simulation engine for dynamic networks with variable number of vertices.
 Implements exponential family based hierachical model for vertice and the edges.
 }
 \examples{
+\dontrun{
 nvertexstats <- 9
 maxLag = 3
 VertexLag = rep(1, maxLag)
@@ -88,7 +89,7 @@ for(i in seq_along(dayClass)) {
     dayClass[i] <- getWeekend(beach[[i]])
 }
 dayClass <- na.omit(dayClass)
-simResult <- engineVertex(InputNetwork = beach,
+simResult <- suppressWarnings(engineVertex(InputNetwork = beach,
                           numSim = 5,
                           maxLag = 3,
                           VertexStatsvec = rep(1, nvertexstats),
@@ -106,7 +107,7 @@ simResult <- engineVertex(InputNetwork = beach,
                           EdgeExvar = NA,
                           EdgeLag = c(0, 1, 0),
                           paramout = TRUE
-                          )
+                          ))}
 
 }
 \author{

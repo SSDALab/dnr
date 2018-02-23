@@ -16,7 +16,8 @@ BetCentrality <- function(z, gmode){
 }
 
 InfoCentrality <- function(z, gmode){
-    out <- sna::infocent(z, gmode = gmode)
+    out <- tryCatch(sna::infocent(z, gmode = gmode, tol = 1e-40),
+                    error = function(err){return(0)})
     return(out)
 }
 

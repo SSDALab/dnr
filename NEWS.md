@@ -1,0 +1,1 @@
+Feb 23, 2018. CRAN release of dnr.

@@ -27,6 +27,7 @@
 ##' VertexParameterMat: Matrix of Vertex parameters.
 ##' @export
 ##'@examples
+##'\dontrun{
 ##' nvertexstats <- 9
 ##' maxLag = 3
 ##' VertexLag = rep(1, maxLag)
@@ -50,7 +51,7 @@
 ##'     dayClass[i] <- getWeekend(beach[[i]])
 ##' }
 ##' dayClass <- na.omit(dayClass)
-##' simResult <- engineVertex(InputNetwork = beach,
+##' simResult <- suppressWarnings(engineVertex(InputNetwork = beach,
 ##'                           numSim = 5,
 ##'                           maxLag = 3,
 ##'                           VertexStatsvec = rep(1, nvertexstats),
@@ -68,7 +69,7 @@
 ##'                           EdgeExvar = NA,
 ##'                           EdgeLag = c(0, 1, 0),
 ##'                           paramout = TRUE
-##'                           )
+##'                           ))}
 ##' 
 ##' @author Abhirup
 
@@ -168,7 +169,7 @@ engineVertex <- function(InputNetwork,
         ## name matching for updating the predictors.
         colnames(smmpleMat) <- names(EdgeCoef)
         ## list of predictors that needs updating: dayEffect
-        if(!is.na(dayClassFuture)){
+        if(sum(!is.na(dayClassFuture)) > 0){
             smmpleMat[, "dayEffect"] <- dayClassFuture[simcount]
         }
         smmpleMat <- as.matrix(smmpleMat/repfac)

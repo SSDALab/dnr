@@ -50,6 +50,7 @@ list:
 Implementation of simulation engine for dynamic networks using smoothing estimates of change statistics.
 }
 \examples{
+\dontrun{
 input_network=rdNets[1:6];
 model.terms=c("triadcensus.003", "triadcensus.012", "triadcensus.102", "triadcensus.021D", "gwesp");
 model.formula = net~triadcensus(0:3)+gwesp(decay = 0, fixed=FALSE, cutoff=30)-1;
@@ -78,7 +79,7 @@ inputcoeff <- out$coef$coef
 nvertex <- 47
 ns <- 10
 exvar <- NA
-tmp <- engineEdge(start_network=start_network,inputcoeff=inputcoeff,ns=ns,
+tmp <- suppressWarnings(engineEdge(start_network=start_network,inputcoeff=inputcoeff,ns=ns,
                      model.terms=model.terms, model.formula=model.formula,
                      graph_mode=graph_mode,group=group,intercept=intercept,
                      exvar=exvar,
@@ -86,7 +87,7 @@ tmp <- engineEdge(start_network=start_network,inputcoeff=inputcoeff,ns=ns,
                      lagmat=lagmat,
                      ylag=ylag,
                      lambda = NA, method='bayesglm',
-                     alpha.glmnet=alpha.glmnet)
+                     alpha.glmnet=alpha.glmnet))}
 
 }
 \author{

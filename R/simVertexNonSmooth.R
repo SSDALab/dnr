@@ -28,13 +28,14 @@
 ##' VertexParameterMat: Matrix of Vertex parameters. \cr
 ##' @export
 ##'@examples
+##'\dontrun{
 ##' nvertexstats <- 9
 ##' maxLag <- 3
 ##' VertexLag <- rep(1, maxLag)
 ##' VertexLagMatrix <- matrix(0, maxLag, nvertexstats)
 ##' VertexLagMatrix[, c(4, 7)] <- 1
 ##' VertexLagMatrix[c(2, 3), ] <- 1
-##' simResult <- engineVertexNS(InputNetwork = beach,
+##' simResult <- suppressWarnings(engineVertexNS(InputNetwork = beach,
 ##'                           numSim = 5,
 ##'                           maxLag = 3,
 ##'                           VertexStatsvec = rep(1, nvertexstats),
@@ -46,7 +47,7 @@
 ##'                           EdgeModelFormula = NA,
 ##'                           EdgeGroup = NA,
 ##'                           EdgeIntercept = c("edges")
-##'                           )
+##'                           ))}
 
 
 engineVertexNS <- function(InputNetwork,
