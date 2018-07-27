@@ -1,6 +1,6 @@
 Package: dnr
 Title: Simulate Dynamic Networks using Exponential Random Graph Models (ERGM) Family
-Version: 0.3.3
+Version: 0.3.4
 Authors@R: c(person("Abhirup", "Mallik", email = "malli066@umn.edu",
                   role = c("aut", "cre")),
   		person("Zack", "Almquist", email = "almquist@umn.edu",

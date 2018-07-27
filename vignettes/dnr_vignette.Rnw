@@ -27,7 +27,7 @@ options(formatR.arrow=TRUE,width=90)
 
 \maketitle
 
-R package 'dnr' enables the user to fit dynamic network regression models for time variate network data available mostly in social sciences or social network analysis. In this document, we demonstrate the process of building a model to fit a dynamic network data set and using that model for prediction.
+R package 'dnr' enables the user to fit dynamic network regression models for time variate network data available mostly in social sciences or social network analysis using the methodology described in \cite{2018arXiv180708834M}. In this document, we demonstrate the process of building a model to fit a dynamic network data set and using that model for prediction.
 
 \section{Analysis of Beach data}
 \label{sec:analysis-beach-data}
@@ -251,7 +251,7 @@ out <- suppressWarnings(paramEdge(input_network,
 out$coef
 @ 
 
-Here the model formula is an ERGM formula. However, we have also provided the expansion of all the terms in the formula. For example the term 'triadcensus(0:3)' has been expanded out to respective triadcensus terms. The 'group' parameter is a categorical attribute for the vertices. This was present in the dynamic vertex case also. The specification of the intercept term is similar as well. The lag terms and lag dependcy of the parameters are represented with a binary vector or a binary matrix respectively.
+Here the model formula is an ERGM formula. However, we have also provided the expansion of all the terms in the formula. For example the term 'triadcensus(0:3)' has been expanded out to respective triadcensus terms. The 'group' parameter is a categorical attribute for the vertices. This was present in the dynamic vertex case also. The specification of the intercept term is similar as well. The lag terms and lag dependency of the parameters are represented with a binary vector or a binary matrix respectively.
 
 We can use the model chosen to simulate the networks in future time points. Here we are simulating $10$ future networks. We have kept the option of specifying the model and the initial network separate unlike the dynamic vertex case. However, using different model than the model fitted on the input network is not recommended as it is easily possible to create examples where these two inputs differ significantly, hurting the performance of the simulation.
 
@@ -323,7 +323,7 @@ plot.ts(tmp$coefmat[, 1:10], xy.labels=FALSE,
 \label{sec:performance-metrics}
 
 
-We also provide some functions for assesing the quality of the simulated networks and make comparisons with holdout set or some other benchmarked networks. Specifically, there are functions for number of triangles, cluster coeficient and expection of degree distribution has been implemented. We report the performance metrics for the input networks as well as the simulated networks for our example on blog data.
+We also provide some functions for assessing the quality of the simulated networks and make comparisons with holdout set or some other benchmarked networks. Specifically, there are functions for number of triangles, cluster coefficient and expectation of degree distribution has been implemented. We report the performance metrics for the input networks as well as the simulated networks for our example on blog data.
 
 <<comparison-metrics, cache=TRUE, eval=TRUE>>=
 perfMetrics <- 
@@ -338,6 +338,11 @@ perfMetrics <- data.frame(perfMetrics, row.names = NULL)
 knitr::kable(perfMetrics, digits = 3,
              caption ="Performance metrics for input and simulated networks.")
 @ 
+
+\medskip
+
+\bibliographystyle{unsrt}
+\bibliography{bibliography}
 \end{document}
 
 

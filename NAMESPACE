@@ -3,6 +3,7 @@
 export(binaryPlot)
 export(clustCoef)
 export(engineEdge)
+export(engineEdgeExperimental)
 export(engineEdgeNS)
 export(engineVertex)
 export(engineVertexNS)
