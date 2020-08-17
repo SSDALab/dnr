@@ -60,35 +60,33 @@
 ##'                      lambda = NA, method='bayesglm',
 ##'                      alpha.glmnet=alpha.glmnet))}
 ##' 
-
 engineEdge <- function(start_network,inputcoeff,ns,
-                          model.terms, model.formula,
-                          graph_mode,group,intercept,
-                          exvar,
-                          maxlag,
-                          lagmat,
-                          ylag,
-                          lambda = NA, method='bayesglm',
-                          alpha.glmnet,
-                          paramout = TRUE){
+                       model.terms, model.formula,
+                       graph_mode,group,intercept,
+                       exvar,
+                       maxlag,
+                       lagmat,
+                       ylag,
+                       lambda = NA, method='bayesglm',
+                       alpha.glmnet,
+                       paramout = TRUE){
   nnetinput <- length(start_network)
   repfac <- nnetinput-maxlag
   nvertex <- network.size(start_network[[1]])
-  nedges <- if(graph_mode=='digraph') nvertex*(nvertex-1)
+  nedges <- ifelse(graph_mode == "digraph", nvertex*(nvertex -1), nvertex*(nvertex - 1)/2)
   out_network <- list()
   coeflist <- list()
-  lagmat[1,] <- rep(0,ncol(lagmat))
   for(ncount in 1:ns){
     print(ncount)
     out1 <- paramEdge(start_network,model.terms, model.formula,
-                     graph_mode=graph_mode,group,intercept = intercept,
-                     exvar=exvar,
-                     maxlag = maxlag,
-                     lagmat = lagmat,
-                     ylag = ylag,
-                     lambda = NA, method=method,
-                     alpha.glmnet=alpha.glmnet,
-                     paramout = paramout)
+                      graph_mode=graph_mode,group,intercept = intercept,
+                      exvar=exvar,
+                      maxlag = maxlag,
+                      lagmat = lagmat,
+                      ylag = ylag,
+                      lambda = NA, method=method,
+                      alpha.glmnet=alpha.glmnet,
+                      paramout = paramout)
     inputmpleMat <- as.matrix(out1$mplemat[,-1])
     smmpleMat <- matrix(0,nedges,ncol(inputmpleMat))
     for(i in 1:repfac){
