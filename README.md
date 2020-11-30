@@ -8,7 +8,7 @@ This package was developed with help from ARO YIP award #W911NF-14-1-0577.
 
 ### References
 
-* Abhirup Mallik and Zack W. Almquist (2017). "Stable Multiple Time Step Simulation/Prediction from Lagged Dynamic Network Regression Models." Working paper. University of Minnesota. 
+* Abhirup Mallik & Zack W. Almquist (2019) Stable Multiple Time Step Simulation/Prediction From Lagged Dynamic Network Regression Models, Journal of Computational and Graphical Statistics, 28:4, 967-979, DOI: 10.1080/10618600.2019.1594834 
 
 * Abhirup Mallik and Zack W. Almquist (2017). "An R Package for Dynamic Network Regression." Working paper. University of Minnesota. 
 

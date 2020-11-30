@@ -1,6 +1,6 @@
 ##' @title Simulation Engine for dynamic Vertex case without smoothing of estimated predictor matrices.
 ##' @description Simulation engine for dynamic networks with variable number of vertices. 
-##' Implements exponential family based hierachical model for vertice and the edges. This does not 
+##' Implements exponential family based hierarchical model for vertices and the edges. This does not 
 ##' implement smoothing for estimated predictor matrices.
 ##' @param InputNetwork List of input networks
 ##' @param numSim number of time points to simulate

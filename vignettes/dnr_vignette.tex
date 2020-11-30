@@ -1,24 +1,857 @@
-\title{Dynamic Network Regression}
+\title{Dynamic Network Regression Using R Package dnr}
 \author{Abhirup Mallik} \date{\today}
-  %\VignetteIndexEntry{A Bootstrap Based Multiple Hypothesis Testing Procedure}
+  %\VignetteIndexEntry{Dynamic Network Regression Using dnr}
   %\VignetteEngine{knitr::knitr}
-\documentclass[12pt]{article}
+\documentclass[12pt]{article}\usepackage[]{graphicx}\usepackage[]{color}
+% maxwidth is the original width if it is less than linewidth
+% otherwise use linewidth (to make sure the graphics do not exceed the margin)
+\makeatletter
+\def\maxwidth{ %
+  \ifdim\Gin@nat@width>\linewidth
+    \linewidth
+  \else
+    \Gin@nat@width
+  \fi
+}
+\makeatother
+
+\definecolor{fgcolor}{rgb}{0.345, 0.345, 0.345}
+\newcommand{\hlnum}[1]{\textcolor[rgb]{0.686,0.059,0.569}{#1}}%
+\newcommand{\hlstr}[1]{\textcolor[rgb]{0.192,0.494,0.8}{#1}}%
+\newcommand{\hlcom}[1]{\textcolor[rgb]{0.678,0.584,0.686}{\textit{#1}}}%
+\newcommand{\hlopt}[1]{\textcolor[rgb]{0,0,0}{#1}}%
+\newcommand{\hlstd}[1]{\textcolor[rgb]{0.345,0.345,0.345}{#1}}%
+\newcommand{\hlkwa}[1]{\textcolor[rgb]{0.161,0.373,0.58}{\textbf{#1}}}%
+\newcommand{\hlkwb}[1]{\textcolor[rgb]{0.69,0.353,0.396}{#1}}%
+\newcommand{\hlkwc}[1]{\textcolor[rgb]{0.333,0.667,0.333}{#1}}%
+\newcommand{\hlkwd}[1]{\textcolor[rgb]{0.737,0.353,0.396}{\textbf{#1}}}%
+\let\hlipl\hlkwb
+
+\usepackage{framed}
+\makeatletter
+\newenvironment{kframe}{%
+ \def\at@end@of@kframe{}%
+ \ifinner\ifhmode%
+  \def\at@end@of@kframe{\end{minipage}}%
+  \begin{minipage}{\columnwidth}%
+ \fi\fi%
+ \def\FrameCommand##1{\hskip\@totalleftmargin \hskip-\fboxsep
+ \colorbox{shadecolor}{##1}\hskip-\fboxsep
+     % There is no \\@totalrightmargin, so:
+     \hskip-\linewidth \hskip-\@totalleftmargin \hskip\columnwidth}%
+ \MakeFramed {\advance\hsize-\width
+   \@totalleftmargin\z@ \linewidth\hsize
+   \@setminipage}}%
+ {\par\unskip\endMakeFramed%
+ \at@end@of@kframe}
+\makeatother
+
+\definecolor{shadecolor}{rgb}{.97, .97, .97}
+\definecolor{messagecolor}{rgb}{0, 0, 0}
+\definecolor{warningcolor}{rgb}{1, 0, 1}
+\definecolor{errorcolor}{rgb}{1, 0, 0}
+\newenvironment{knitrout}{}{} % an empty environment to be redefined in TeX
+
+\usepackage{alltt}
 \usepackage{amsmath}
 \usepackage{amsthm}
 \usepackage{amssymb}
+\usepackage{geometry}
+\geometry{verbose,tmargin=2.5cm,bmargin=2.5cm,lmargin=2.5cm,rmargin=2.5cm}
 %\usepackage{fullpage}
 \usepackage{graphicx}
 \usepackage{setspace}
 \usepackage{verbatim}
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
 \begin{document}
 %\SweaveOpts{concordance=TRUE}
 \newcommand\myeq{\mathrel{\stackrel{\makebox[0pt]{\mbox{\normalfont\tiny def}}}{=}}}
 
+
+
 \maketitle
 
-R package 'dnr' enables the user to fit dynamic network regression models for time variate network data available prevelantly in social sciences or social network analysis. In this document, we demonstrate the process of building a model to fit a dynamic network data set and using that model for prediction.
+R package 'dnr' enables the user to fit dynamic network regression models for time variate network data available mostly in social sciences or social network analysis. In this document, we demonstrate the process of building a model to fit a dynamic network data set and using that model for prediction.
 
-We consider the beach data for our demo.
+\section{Analysis of Beach data}
+\label{sec:analysis-beach-data}
+
+First, we consider the beach data for our demo.
+
+
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{suppressMessages}\hlstd{(}\hlkwd{library}\hlstd{(dnr))}
+\hlkwd{data}\hlstd{(beach)}
+
+\hlcom{## get the number of time points}
+\hlkwd{length}\hlstd{(beach)}
+\end{alltt}
+\begin{verbatim}
+## [1] 31
+\end{verbatim}
+\begin{alltt}
+\hlcom{## network size (that allows NA)}
+\hlstd{network.size.1} \hlkwb{<-} \hlkwa{function}\hlstd{(}\hlkwc{x}\hlstd{)\{}
+  \hlkwa{if}\hlstd{(}\hlopt{!}\hlstd{network}\hlopt{::}\hlkwd{is.network}\hlstd{(x))\{}
+    \hlkwa{if}\hlstd{(}\hlkwd{is.na}\hlstd{(x))} \hlkwd{return}\hlstd{(}\hlnum{0}\hlstd{)}
+  \hlstd{\}} \hlkwa{else} \hlkwd{return}\hlstd{(network}\hlopt{::}\hlkwd{network.size}\hlstd{(x))}
+\hlstd{\}}
+
+\hlcom{## get the size of networks at each time point}
+\hlkwd{sapply}\hlstd{(beach, network.size.1)}
+\end{alltt}
+\begin{verbatim}
+## 828 829 830 831 901 902 903 904 905 906 907 908 909 910 911 912 913 914 915 916 917 918 
+##  11  14  23  22  13   6  16  21  12  24  37  10   9  14  10  12  24  21  12  11  15  16 
+## 919 920 921 922 923 924 925 926 927 
+##  10  28   0   8  10   3  10  14  34
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+The beach data is a rapidly changing data set with possible periodic effects. We visualize the adjacency matrix from four time points of the data.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{par}\hlstd{(}\hlkwc{mfrow} \hlstd{=} \hlkwd{c}\hlstd{(}\hlnum{2}\hlstd{,}\hlnum{2}\hlstd{))}
+\hlkwd{binaryPlot}\hlstd{(beach[[}\hlnum{1}\hlstd{]][, ],} \hlkwc{title} \hlstd{=} \hlstr{"Time point 1"}\hlstd{)}
+\hlkwd{binaryPlot}\hlstd{(beach[[}\hlnum{10}\hlstd{]][, ],} \hlkwc{title} \hlstd{=} \hlstr{"Time point 10"}\hlstd{)}
+\hlkwd{binaryPlot}\hlstd{(beach[[}\hlnum{20}\hlstd{]][, ],} \hlkwc{title} \hlstd{=} \hlstr{"Time point 20"}\hlstd{)}
+\hlkwd{binaryPlot}\hlstd{(beach[[}\hlnum{31}\hlstd{]][, ],} \hlkwc{title} \hlstd{=} \hlstr{"Time point 31"}\hlstd{)}
+\end{alltt}
+\end{kframe}
+
+{\centering \includegraphics[width=\linewidth]{figure/Vignette-beach-fig-1} 
+
+}
+
+
+
+\end{knitrout}
+
+For vertex model, we define our own term dictionary. We use the similar approach as the edge model for specifying the time dependence of the terms using a matrix of lag terms.
+
+\begin{table}[h]
+  \centering
+  \begin{tabular}[h]{|c|c|}
+    \hline
+    Term & Index \\
+    \hline
+    degree (Freeman) & 1 \\
+    in degree & 2 \\
+    out degree & 3 \\
+    Eigen centrality & 4 \\
+    Between centrality & 5 \\
+    Info centrality & 6 \\
+    Closeness centrality & 7 \\
+    Log K cycle & 8 \\
+    Log size & 9 \\
+    \hline
+  \end{tabular}
+  \caption{Index of the terms for specifying the vertex model}
+\end{table}
+
+\subsection{Model Fitting}
+\label{sec:model-fitting-beach}
+
+We first try to build the model for vertex regression. We consider a maximum lag of 3. We need to specify the lag structure using a binary vector of size 3. We also need to specify the dependence on the vertex parameters up to 3 lags. There are $9$ vertex parameters available in the current version of the library. We use a binary matrix of size $3 \times 9$ for specifying the lag dependence of the parameters.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{nvertexstats} \hlkwb{<-} \hlnum{9}
+\hlstd{maxLag} \hlkwb{=} \hlnum{3}
+\hlstd{VertexLag} \hlkwb{=} \hlkwd{rep}\hlstd{(}\hlnum{1}\hlstd{, maxLag)}
+\hlstd{VertexLagMatrix1} \hlkwb{<-} \hlkwd{matrix}\hlstd{(}\hlnum{1}\hlstd{, maxLag, nvertexstats)}
+\hlstd{VertexLagMatrix1}
+\end{alltt}
+\begin{verbatim}
+##      [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9]
+## [1,]    1    1    1    1    1    1    1    1    1
+## [2,]    1    1    1    1    1    1    1    1    1
+## [3,]    1    1    1    1    1    1    1    1    1
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+As for this data set there is expected seasonal effect, for example weekends would have different effect than weekdays, we would like to model that using a time variate intercept parameter. We write a function to extract the day information from the data.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{getWeekend} \hlkwb{<-} \hlkwa{function}\hlstd{(}\hlkwc{z}\hlstd{)\{}
+    \hlstd{weekends} \hlkwb{<-} \hlkwd{c}\hlstd{(}\hlstr{"Saturday"}\hlstd{,} \hlstr{"Sunday"}\hlstd{)}
+    \hlkwa{if}\hlstd{(}\hlopt{!}\hlstd{network}\hlopt{::}\hlkwd{is.network}\hlstd{(z))\{}
+        \hlkwa{if}\hlstd{(}\hlkwd{is.na}\hlstd{(z))} \hlkwd{return}\hlstd{(}\hlnum{NA}\hlstd{)}
+    \hlstd{\}} \hlkwa{else} \hlstd{\{}
+         \hlstd{zDay} \hlkwb{<-} \hlkwd{get.network.attribute}\hlstd{(z,} \hlkwc{attrname} \hlstd{=} \hlstr{"day"}\hlstd{)}
+         \hlstd{out} \hlkwb{<-} \hlkwd{ifelse}\hlstd{(zDay} \hlopt{%in%} \hlstd{weekends,} \hlnum{1}\hlstd{,} \hlnum{0}\hlstd{)}
+         \hlkwd{return}\hlstd{(out)}
+    \hlstd{\}}
+\hlstd{\}}
+
+\hlcom{## for(i in 1:31) print(getWeekend(beach[[i]]))}
+\hlcom{## generate a vector of network level exogenous variable}
+\hlstd{dayClass} \hlkwb{<-} \hlkwd{numeric}\hlstd{(}\hlkwd{length}\hlstd{(beach))}
+\hlkwa{for}\hlstd{(i} \hlkwa{in} \hlkwd{seq_along}\hlstd{(dayClass)) \{}
+    \hlstd{dayClass[i]} \hlkwb{<-} \hlkwd{getWeekend}\hlstd{(beach[[i]])}
+\hlstd{\}}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+We then use the function paramVertexOnly() to fit the model specified above to the beach data. Most of the options are kept at their default value. For a detail description of the model specification, please refer to the help pages of the function. We use the default 'bayesGLM' option for the logistic regression. We print the model object, which is an object from arm package, with its own summary method.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{out} \hlkwb{<-} \hlkwd{paramVertexOnly}\hlstd{(}\hlkwc{InputNetwork} \hlstd{= beach,}
+                       \hlkwc{maxLag} \hlstd{=} \hlnum{3}\hlstd{,}
+                       \hlkwc{VertexStatsvec} \hlstd{=} \hlkwd{rep}\hlstd{(}\hlnum{1}\hlstd{, nvertexstats),}
+                       \hlkwc{VertexLag} \hlstd{=} \hlkwd{rep}\hlstd{(}\hlnum{1}\hlstd{, maxLag),}
+                       \hlkwc{VertexLagMatrix} \hlstd{= VertexLagMatrix1,}
+                       \hlkwc{dayClass} \hlstd{= dayClass)}
+\hlkwd{summary}\hlstd{(out}\hlopt{$}\hlstd{VertexFit}\hlopt{$}\hlstd{fit)}
+\end{alltt}
+\begin{verbatim}
+## 
+## Call:
+## arm::bayesglm(formula = y ~ . - 1, family = binomial(link = "logit"), 
+##     data = XYdata)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -2.0506  -1.1774  -1.0569  -0.6421   2.5063  
+## 
+## Coefficients:
+##                         Estimate Std. Error z value Pr(>|z|)    
+## lag1                    1.028333   0.769727   1.336  0.18156    
+## lag2                    1.572503   0.892916   1.761  0.07822 .  
+## lag3                    0.843973   0.764983   1.103  0.26992    
+## Day                    -0.852764   0.091841  -9.285  < 2e-16 ***
+## DegreeLag1.             0.021577   0.235425   0.092  0.92698    
+## InDegreeLag1.           0.043153   0.470850   0.092  0.92698    
+## OutDegreeLag1.          0.043153   0.470850   0.092  0.92698    
+## EigenCentralityLag1.    0.493574   0.524196   0.942  0.34641    
+## BetweenCentralityLag1. -0.006343   0.005935  -1.069  0.28520    
+## InfoCentralityLag1.     0.204742   0.141982   1.442  0.14929    
+## CloseCentralityLag1.    2.724521   0.842090   3.235  0.00121 ** 
+## LogCycleLag1.          -0.133896   0.151723  -0.883  0.37750    
+## LogSizeLag1.           -0.572636   0.275158  -2.081  0.03742 *  
+## DegreeLag2.            -0.002111   0.233643  -0.009  0.99279    
+## InDegreeLag2.          -0.004221   0.467285  -0.009  0.99279    
+## OutDegreeLag2.         -0.004221   0.467285  -0.009  0.99279    
+## EigenCentralityLag2.    1.130413   0.578243   1.955  0.05059 .  
+## BetweenCentralityLag2.  0.005331   0.005433   0.981  0.32647    
+## InfoCentralityLag2.    -0.041003   0.157030  -0.261  0.79400    
+## CloseCentralityLag2.    0.954564   0.813966   1.173  0.24090    
+## LogCycleLag2.           0.013217   0.161119   0.082  0.93462    
+## LogSizeLag2.           -0.992356   0.324498  -3.058  0.00223 ** 
+## DegreeLag3.            -0.002304   0.234386  -0.010  0.99216    
+## InDegreeLag3.          -0.004608   0.468772  -0.010  0.99216    
+## OutDegreeLag3.         -0.004608   0.468772  -0.010  0.99216    
+## EigenCentralityLag3.    1.032205   0.569196   1.813  0.06976 .  
+## BetweenCentralityLag3.  0.006441   0.005657   1.139  0.25490    
+## InfoCentralityLag3.     0.457919   0.168657   2.715  0.00663 ** 
+## CloseCentralityLag3.    0.511478   0.854881   0.598  0.54964    
+## LogCycleLag3.          -0.247933   0.167125  -1.484  0.13794    
+## LogSizeLag3.           -0.755771   0.279837  -2.701  0.00692 ** 
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 3555.8  on 2565  degrees of freedom
+## Residual deviance: 3200.3  on 2534  degrees of freedom
+## AIC: 3262.3
+## 
+## Number of Fisher Scoring iterations: 8
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+As we can see the model is hardly parsimonious. So, we decided to remove the terms that were not significant. We report the result of the refitted model.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{VertexLagMatrix} \hlkwb{<-} \hlkwd{matrix}\hlstd{(}\hlnum{0}\hlstd{, maxLag, nvertexstats)}
+\hlstd{VertexLagMatrix[,} \hlkwd{c}\hlstd{(}\hlnum{4}\hlstd{,} \hlnum{7}\hlstd{)]} \hlkwb{<-} \hlnum{1}
+\hlstd{VertexLagMatrix[}\hlkwd{c}\hlstd{(}\hlnum{2}\hlstd{,}\hlnum{3}\hlstd{),}\hlnum{7}\hlstd{]} \hlkwb{<-} \hlnum{0}
+\hlstd{VertexLagMatrix}
+\end{alltt}
+\begin{verbatim}
+##      [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9]
+## [1,]    0    0    0    1    0    0    1    0    0
+## [2,]    0    0    0    1    0    0    0    0    0
+## [3,]    0    0    0    1    0    0    0    0    0
+\end{verbatim}
+\begin{alltt}
+\hlstd{out} \hlkwb{<-} \hlkwd{paramVertexOnly}\hlstd{(}\hlkwc{InputNetwork} \hlstd{= beach,}
+                       \hlkwc{maxLag} \hlstd{=} \hlnum{3}\hlstd{,}
+                       \hlkwc{VertexStatsvec} \hlstd{=} \hlkwd{rep}\hlstd{(}\hlnum{1}\hlstd{, nvertexstats),}
+                       \hlkwc{VertexLag} \hlstd{=} \hlkwd{rep}\hlstd{(}\hlnum{1}\hlstd{, maxLag),}
+                       \hlkwc{VertexLagMatrix} \hlstd{= VertexLagMatrix,}
+                       \hlkwc{dayClass} \hlstd{= dayClass)}
+\hlkwd{summary}\hlstd{(out}\hlopt{$}\hlstd{VertexFit}\hlopt{$}\hlstd{fit)}
+\end{alltt}
+\begin{verbatim}
+## 
+## Call:
+## arm::bayesglm(formula = y ~ . - 1, family = binomial(link = "logit"), 
+##     data = XYdata)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -1.9023  -1.1774  -1.0664  -0.7149   2.6037  
+## 
+## Coefficients:
+##                      Estimate Std. Error z value Pr(>|z|)    
+## lag1                 -0.49443    0.17426  -2.837 0.004549 ** 
+## lag2                 -1.23852    0.19443  -6.370 1.89e-10 ***
+## lag3                 -1.23395    0.19007  -6.492 8.46e-11 ***
+## Day                  -0.83117    0.09079  -9.155  < 2e-16 ***
+## EigenCentralityLag1.  1.20172    0.28613   4.200 2.67e-05 ***
+## CloseCentralityLag1.  2.53228    0.73493   3.446 0.000570 ***
+## EigenCentralityLag2.  1.30669    0.31145   4.196 2.72e-05 ***
+## EigenCentralityLag3.  1.18579    0.31646   3.747 0.000179 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 3555.8  on 2565  degrees of freedom
+## Residual deviance: 3268.0  on 2557  degrees of freedom
+## AIC: 3284
+## 
+## Number of Fisher Scoring iterations: 4
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+Now, we have a model with mostly significant parameters, so we select this model for vertex generation.
+
+As the edge model and vertex model are separable, we can expect this model to work for the joint model as well. We use the function paramVertex() for fitting the joint vertex-edge model to the beach data.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{out} \hlkwb{<-} \hlkwd{paramVertex}\hlstd{(}\hlkwc{InputNetwork} \hlstd{= beach,}
+                   \hlkwc{maxLag} \hlstd{=} \hlnum{3}\hlstd{,}
+                   \hlkwc{VertexStatsvec} \hlstd{=} \hlkwd{rep}\hlstd{(}\hlnum{1}\hlstd{, nvertexstats),}
+                   \hlkwc{VertexModelGroup} \hlstd{=} \hlstr{"regular"}\hlstd{,}
+                   \hlkwc{VertexLag} \hlstd{=} \hlkwd{rep}\hlstd{(}\hlnum{1}\hlstd{, maxLag),}
+                   \hlkwc{VertexLagMatrix} \hlstd{= VertexLagMatrix,}
+                   \hlkwc{dayClass} \hlstd{= dayClass,}
+                   \hlkwc{EdgeModelTerms} \hlstd{=} \hlnum{NA}\hlstd{,}
+                   \hlkwc{EdgeModelFormula} \hlstd{=} \hlnum{NA}\hlstd{,}
+                   \hlkwc{EdgeGroup} \hlstd{=} \hlnum{NA}\hlstd{,}
+                   \hlkwc{EdgeIntercept} \hlstd{=} \hlkwd{c}\hlstd{(}\hlstr{"edges"}\hlstd{),}
+                   \hlkwc{EdgeNetparam} \hlstd{=} \hlkwd{c}\hlstd{(}\hlstr{"logSize"}\hlstd{),}
+                   \hlkwc{EdgeExvar} \hlstd{=} \hlnum{NA}\hlstd{,}
+                   \hlkwc{EdgeLag} \hlstd{=} \hlkwd{c}\hlstd{(}\hlnum{1}\hlstd{,} \hlnum{1}\hlstd{,} \hlnum{0}\hlstd{),}
+                   \hlkwc{paramout} \hlstd{=} \hlnum{TRUE}\hlstd{)}
+\hlkwd{summary}\hlstd{(out}\hlopt{$}\hlstd{VertexFit}\hlopt{$}\hlstd{fit)}
+\end{alltt}
+\begin{verbatim}
+## 
+## Call:
+## arm::bayesglm(formula = y ~ . - 1, family = binomial(link = "logit"), 
+##     data = XYdata)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -1.8281  -1.1774  -1.0338  -0.6774   2.5414  
+## 
+## Coefficients:
+##                          Estimate Std. Error z value Pr(>|z|)    
+## Lag.1                   -1.676754   0.330337  -5.076 3.86e-07 ***
+## Lag.2                   -0.916349   0.185439  -4.942 7.75e-07 ***
+## Lag.3                    2.431926   0.677818   3.588 0.000333 ***
+## NetworkAttribute        -0.812013   0.090505  -8.972  < 2e-16 ***
+## regular.Lag3             1.711891   0.331969   5.157 2.51e-07 ***
+## InDegree.Lag.1           0.143098   0.039655   3.609 0.000308 ***
+## BetweenCentrality.Lag.1 -0.009693   0.004625  -2.096 0.036079 *  
+## InDegree.Lag.2           0.036012   0.034355   1.048 0.294541    
+## InDegree.Lag.3           0.224932   0.087824   2.561 0.010432 *  
+## LogCycle.Lag.3          -0.161306   0.140391  -1.149 0.250566    
+## LogSize.Lag.3           -1.300858   0.261434  -4.976 6.50e-07 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 3555.8  on 2565  degrees of freedom
+## Residual deviance: 3241.2  on 2554  degrees of freedom
+## AIC: 3263.2
+## 
+## Number of Fisher Scoring iterations: 7
+\end{verbatim}
+\begin{alltt}
+\hlkwd{summary}\hlstd{(out}\hlopt{$}\hlstd{EdgeFit}\hlopt{$}\hlstd{fit)}
+\end{alltt}
+\begin{verbatim}
+## 
+## Call:
+## arm::bayesglm(formula = y ~ . - 1, family = binomial(link = "logit"), 
+##     data = XYdata)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -2.3150  -0.3897  -0.3260  -0.3001   2.5369  
+## 
+## Coefficients:
+##                Estimate Std. Error z value Pr(>|z|)    
+## edges          -0.26210    0.50209  -0.522    0.602    
+## logCurrNetSize -0.72743    0.13676  -5.319 1.04e-07 ***
+## dayEffect       0.56833    0.06285   9.043  < 2e-16 ***
+## lag1            0.60923    0.14263   4.271 1.94e-05 ***
+## lag2            4.37638    0.10029  43.638  < 2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 29588  on 21343  degrees of freedom
+## Residual deviance: 10073  on 21338  degrees of freedom
+## AIC: 10083
+## 
+## Number of Fisher Scoring iterations: 5
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+The edge model parameters are specified using 'EdgeIntercept' term, as we are using an intercept only model. For this example, we have tried using time variate parameters, but finally decided on the intercept only model. The term 'EdgeNetParam' indicates the network level attribute. Currently the only attribute supported here is 'logSize', which is log of the network size at the present time point. The binary vector 'EdgeLag' indicates the lag dependence of the edges. The terms 'EdgeModelTerms' and 'EdgeModelFormula' has not been used for this example.
+
+\subsection{Prediction for Beach Data}
+\label{sec:pred-beach-data}
+
+As we have finalized on a model for the beach data, we can use this model to predict the future networks up to any arbitrary number of time points. As long as we do not run into the problems of degeneracy, the simulation method should be able to generate networks with this model.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{suppressWarnings}\hlstd{(simResult} \hlkwb{<-} \hlkwd{engineVertex}\hlstd{(}\hlkwc{InputNetwork} \hlstd{= beach,}
+                          \hlkwc{numSim} \hlstd{=} \hlnum{3}\hlstd{,}
+                          \hlkwc{maxLag} \hlstd{=} \hlnum{3}\hlstd{,}
+                          \hlkwc{VertexStatsvec} \hlstd{=} \hlkwd{rep}\hlstd{(}\hlnum{1}\hlstd{, nvertexstats),}
+                          \hlkwc{VertexModelGroup} \hlstd{=} \hlstr{"regular"}\hlstd{,}
+                          \hlkwc{VertexAttLag} \hlstd{=} \hlkwd{rep}\hlstd{(}\hlnum{1}\hlstd{, maxLag),}
+                          \hlkwc{VertexLag} \hlstd{=} \hlkwd{rep}\hlstd{(}\hlnum{1}\hlstd{, maxLag),}
+                          \hlkwc{VertexLagMatrix} \hlstd{= VertexLagMatrix,}
+                          \hlkwc{dayClassObserved} \hlstd{= dayClass,}
+                          \hlkwc{dayClassFuture} \hlstd{=} \hlkwd{c}\hlstd{(}\hlnum{1}\hlstd{,} \hlnum{0}\hlstd{,} \hlnum{0}\hlstd{,} \hlnum{0}\hlstd{,} \hlnum{0}\hlstd{),}
+                          \hlkwc{EdgeModelTerms} \hlstd{=} \hlnum{NA}\hlstd{,}
+                          \hlkwc{EdgeModelFormula} \hlstd{=} \hlnum{NA}\hlstd{,}
+                          \hlkwc{EdgeGroup} \hlstd{=} \hlnum{NA}\hlstd{,}
+                          \hlkwc{EdgeIntercept} \hlstd{=} \hlkwd{c}\hlstd{(}\hlstr{"edges"}\hlstd{),}
+                          \hlkwc{EdgeNetparam} \hlstd{=} \hlkwd{c}\hlstd{(}\hlstr{"logSize"}\hlstd{),}
+                          \hlkwc{EdgeExvar} \hlstd{=} \hlnum{NA}\hlstd{,}
+                          \hlkwc{EdgeLag} \hlstd{=} \hlkwd{c}\hlstd{(}\hlnum{0}\hlstd{,} \hlnum{1}\hlstd{,} \hlnum{0}\hlstd{),}
+                          \hlkwc{paramout} \hlstd{=} \hlnum{TRUE}
+                          \hlstd{))}
+\end{alltt}
+\begin{verbatim}
+## [1] 1
+\end{verbatim}
+
+
+{\ttfamily\noindent\itshape\color{messagecolor}{\#\# Starting maximum pseudolikelihood estimation (MPLE):}}
+
+{\ttfamily\noindent\itshape\color{messagecolor}{\#\# Evaluating the predictor and response matrix.}}
+
+{\ttfamily\noindent\itshape\color{messagecolor}{\#\# Maximizing the pseudolikelihood.}}
+
+{\ttfamily\noindent\itshape\color{messagecolor}{\#\# Finished MPLE.}}
+
+{\ttfamily\noindent\itshape\color{messagecolor}{\#\# Stopping at the initial estimate.}}
+
+{\ttfamily\noindent\itshape\color{messagecolor}{\#\# Evaluating log-likelihood at the estimate.}}\begin{verbatim}
+## [1] 2
+\end{verbatim}
+
+
+{\ttfamily\noindent\itshape\color{messagecolor}{\#\# Starting maximum pseudolikelihood estimation (MPLE):\\\#\# Evaluating the predictor and response matrix.\\\#\# Maximizing the pseudolikelihood.\\\#\# Finished MPLE.\\\#\# Stopping at the initial estimate.\\\#\# Evaluating log-likelihood at the estimate.}}\begin{verbatim}
+## [1] 3
+\end{verbatim}
+
+
+{\ttfamily\noindent\itshape\color{messagecolor}{\#\# Starting maximum pseudolikelihood estimation (MPLE):\\\#\# Evaluating the predictor and response matrix.\\\#\# Maximizing the pseudolikelihood.\\\#\# Finished MPLE.\\\#\# Stopping at the initial estimate.\\\#\# Evaluating log-likelihood at the estimate.}}\begin{alltt}
+\hlkwd{par}\hlstd{(}\hlkwc{mfrow} \hlstd{=} \hlkwd{c}\hlstd{(}\hlnum{2}\hlstd{,}\hlnum{2}\hlstd{))}
+\hlkwd{binaryPlot}\hlstd{(beach[[}\hlnum{31}\hlstd{]][, ],} \hlkwc{title} \hlstd{=} \hlstr{"Time point 31"}\hlstd{)}
+\hlkwd{binaryPlot}\hlstd{(simResult}\hlopt{$}\hlstd{SimNetwork[[}\hlnum{1}\hlstd{]][, ],} \hlkwc{title} \hlstd{=} \hlstr{"Time point 32 (simulated)"}\hlstd{)}
+\hlkwd{binaryPlot}\hlstd{(simResult}\hlopt{$}\hlstd{SimNetwork[[}\hlnum{2}\hlstd{]][, ],} \hlkwc{title} \hlstd{=} \hlstr{"Time point 33 (simulated)"}\hlstd{)}
+\hlkwd{binaryPlot}\hlstd{(simResult}\hlopt{$}\hlstd{SimNetwork[[}\hlnum{3}\hlstd{]][, ],} \hlkwc{title} \hlstd{=} \hlstr{"Time point 34 (simulated)"}\hlstd{)}
+\end{alltt}
+\end{kframe}
+
+{\centering \includegraphics[width=\linewidth]{figure/Vignette-sim-beach-1} 
+
+}
+
+
+
+\end{knitrout}
+
+\section{Model for Fixed Vertex Case}
+\label{sec:model-fixed-vertex}
+
+Even though fixed vertex case can be considered as a special case of dynamic vertex-edge case, it is preferred that the fixed vertex case is handled in a simpler way. We have provided separate functions for this case, that we will demonstrate using the blog data set.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{data}\hlstd{(rdNets)}
+\hlkwd{length}\hlstd{(rdNets)}
+\end{alltt}
+\begin{verbatim}
+## [1] 484
+\end{verbatim}
+\begin{alltt}
+\hlstd{rdNets[[}\hlnum{1}\hlstd{]]}
+\end{alltt}
+\begin{verbatim}
+##  Network attributes:
+##   vertices = 47 
+##   directed = TRUE 
+##   hyper = FALSE 
+##   loops = FALSE 
+##   multiple = FALSE 
+##   bipartite = FALSE 
+##   total edges= 182 
+##     missing edges= 0 
+##     non-missing edges= 182 
+## 
+##  Vertex attribute names: 
+##     dnc rnc vertex.names 
+## 
+##  Edge attribute names: 
+##     frequency
+\end{verbatim}
+\begin{alltt}
+\hlkwd{plot}\hlstd{(rdNets[[}\hlnum{1}\hlstd{]])}
+\end{alltt}
+\end{kframe}
+
+{\centering \includegraphics[width=\linewidth]{figure/Vignette-blog-data-1} 
+
+}
+
+
+
+\end{knitrout}
+
+We use the function paramest() to fit the edge model to the blog data. The function accepts ERGM style model formulas, however we require that the terms are expanded by the user. This is required to construct the lag dependence binary matrix. The interface for this function is similar to the dynamic vertex case.
+
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{input_network}\hlkwb{=}\hlstd{rdNets[}\hlnum{1}\hlopt{:}\hlnum{6}\hlstd{]}
+\hlstd{model.terms}\hlkwb{=}\hlkwd{c}\hlstd{(}\hlstr{"triadcensus.003"}\hlstd{,} \hlstr{"triadcensus.012"}\hlstd{,} \hlstr{"triadcensus.102"}\hlstd{,} \hlstr{"triadcensus.021D"}\hlstd{,} \hlstr{"gwesp"}\hlstd{);}
+\hlstd{model.formula} \hlkwb{=} \hlstd{net}\hlopt{~}\hlkwd{triadcensus}\hlstd{(}\hlnum{0}\hlopt{:}\hlnum{3}\hlstd{)}\hlopt{+}\hlkwd{gwesp}\hlstd{(}\hlkwc{decay}\hlstd{=}\hlnum{0}\hlstd{,} \hlkwc{fixed}\hlstd{=}\hlnum{FALSE}\hlstd{,} \hlkwc{cutoff}\hlstd{=}\hlnum{30}\hlstd{)}\hlopt{-}\hlnum{1}\hlstd{;}
+\hlstd{graph_mode}\hlkwb{=}\hlstr{'digraph'}\hlstd{;}
+\hlstd{group}\hlkwb{=}\hlstr{'dnc'}\hlstd{;}
+\hlstd{alpha.glmnet}\hlkwb{=}\hlnum{1}
+\hlstd{directed}\hlkwb{=}\hlnum{TRUE}\hlstd{;}
+\hlstd{method} \hlkwb{<-} \hlstr{'bayesglm'}
+\hlstd{maxlag} \hlkwb{<-} \hlnum{3}
+\hlstd{lambda}\hlkwb{=}\hlnum{NA}
+\hlstd{intercept} \hlkwb{=} \hlkwd{c}\hlstd{(}\hlstr{"edges"}\hlstd{)}
+\hlstd{cdim} \hlkwb{<-} \hlkwd{length}\hlstd{(model.terms)}
+\hlstd{lagmat} \hlkwb{<-} \hlkwd{matrix}\hlstd{(}\hlkwd{sample}\hlstd{(}\hlkwd{c}\hlstd{(}\hlnum{0}\hlstd{,}\hlnum{1}\hlstd{),(maxlag}\hlopt{+}\hlnum{1}\hlstd{)}\hlopt{*}\hlstd{cdim,}\hlkwc{replace} \hlstd{=} \hlnum{TRUE}\hlstd{),}\hlkwc{ncol} \hlstd{= cdim)}
+\hlstd{ylag} \hlkwb{<-} \hlkwd{rep}\hlstd{(}\hlnum{1}\hlstd{,maxlag)}
+\hlstd{exvar} \hlkwb{<-} \hlnum{NA}
+\hlstd{out} \hlkwb{<-} \hlkwd{suppressWarnings}\hlstd{(}\hlkwd{paramEdge}\hlstd{(input_network,}
+                                  \hlstd{model.terms,}
+                                  \hlstd{model.formula,}
+                                  \hlkwc{graph_mode}\hlstd{=}\hlstr{'digraph'}\hlstd{,}
+                                  \hlstd{group,}\hlkwc{intercept} \hlstd{=} \hlkwd{c}\hlstd{(}\hlstr{"edges"}\hlstd{),}\hlkwc{exvar}\hlstd{=}\hlnum{NA}\hlstd{,}
+                                  \hlkwc{maxlag} \hlstd{=} \hlnum{3}\hlstd{,}
+                                  \hlkwc{lagmat} \hlstd{=} \hlkwd{matrix}\hlstd{(}\hlkwd{sample}\hlstd{(}\hlkwd{c}\hlstd{(}\hlnum{0}\hlstd{,}\hlnum{1}\hlstd{),(maxlag}\hlopt{+}\hlnum{1}\hlstd{)}\hlopt{*}\hlstd{cdim,}
+                                                         \hlkwc{replace} \hlstd{=} \hlnum{TRUE}\hlstd{),}\hlkwc{ncol} \hlstd{= cdim),}
+                                  \hlkwc{ylag} \hlstd{=} \hlkwd{rep}\hlstd{(}\hlnum{1}\hlstd{,maxlag),}
+                                  \hlkwc{lambda} \hlstd{=} \hlnum{NA}\hlstd{,} \hlkwc{method}\hlstd{=}\hlstr{'bayesglm'}\hlstd{,}
+                                  \hlkwc{alpha.glmnet}\hlstd{=}\hlnum{1}\hlstd{))}
+\hlstd{out}\hlopt{$}\hlstd{coef}
+\end{alltt}
+\begin{verbatim}
+## $coef
+##              edges      edgecov.dnc11      edgecov.dnc01      edgecov.dnc10 
+##      -8.2798622983      -0.2755134283      -1.0308723678       0.6787605819 
+##      edgecov.dnc00              gwesp  triadcensus.012.1 triadcensus.021D.1 
+##      -0.3004918453       0.2986083582       0.0037902537      -0.1270131387 
+##            gwesp.1  triadcensus.003.2  triadcensus.012.2 triadcensus.021D.2 
+##       0.3794581711       0.0358799758      -0.0003685272       0.0080763175 
+##            gwesp.2  triadcensus.003.3  triadcensus.012.3  triadcensus.102.3 
+##      -0.5852427683      -0.0161236662       0.0570554818       0.0869214221 
+##            gwesp.3               lag1               lag2               lag3 
+##      -0.4948791773       1.6541685129       3.7069640575       9.6239323751 
+## 
+## $se
+##              edges      edgecov.dnc11      edgecov.dnc01      edgecov.dnc10 
+##         2.49763576         1.18150056         1.32414861         1.23096164 
+##      edgecov.dnc00              gwesp  triadcensus.012.1 triadcensus.021D.1 
+##         1.47446131         0.47567584         0.02270740         0.13399467 
+##            gwesp.1  triadcensus.003.2  triadcensus.012.2 triadcensus.021D.2 
+##         0.49373636         0.06841464         0.04069771         0.13640570 
+##            gwesp.2  triadcensus.003.3  triadcensus.012.3  triadcensus.102.3 
+##         0.62211905         0.07538929         0.04947578         0.06618294 
+##            gwesp.3               lag1               lag2               lag3 
+##         0.61931432         1.45943941         1.54169574         1.22620783 
+## 
+## $lambda
+## [1] NA
+## 
+## $fit
+## 
+## Call:  arm::bayesglm(formula = y ~ . - 1, family = binomial(link = "logit"), 
+##     data = XYdata)
+## 
+## Coefficients:
+##              edges       edgecov.dnc11       edgecov.dnc01       edgecov.dnc10  
+##         -8.2798623          -0.2755134          -1.0308724           0.6787606  
+##      edgecov.dnc00               gwesp   triadcensus.012.1  triadcensus.021D.1  
+##         -0.3004918           0.2986084           0.0037903          -0.1270131  
+##            gwesp.1   triadcensus.003.2   triadcensus.012.2  triadcensus.021D.2  
+##          0.3794582           0.0358800          -0.0003685           0.0080763  
+##            gwesp.2   triadcensus.003.3   triadcensus.012.3   triadcensus.102.3  
+##         -0.5852428          -0.0161237           0.0570555           0.0869214  
+##            gwesp.3                lag1                lag2                lag3  
+##         -0.4948792           1.6541685           3.7069641           9.6239324  
+## 
+## Degrees of Freedom: 6486 Total (i.e. Null);  6466 Residual
+## Null Deviance:	    8992 
+## Residual Deviance: 64.21 	AIC: 104.2
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+Here the model formula is an ERGM formula. However, we have also provided the expansion of all the terms in the formula. For example the term 'triadcensus(0:3)' has been expanded out to respective triadcensus terms. The 'group' parameter is a categorical attribute for the vertices. This was present in the dynamic vertex case also. The specification of the intercept term is similar as well. The lag terms and lag dependancy of the parameters are represented with a binary vector or a binary matrix respectively.
+
+We can use the model chosen to simulate the networks in future time points. Here we are simulating $10$ future networks. We have kept the option of specifying the model and the initial network separate unlike the dynamic vertex case. However, using different model than the model fitted on the input network is not recommended as it is easily possible to create examples where these two inputs differ significantly, hurting the performance of the simulation.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{input_network}\hlkwb{=}\hlstd{rdNets[}\hlnum{1}\hlopt{:}\hlnum{6}\hlstd{]}
+\hlstd{model.terms}\hlkwb{=}\hlkwd{c}\hlstd{(}\hlstr{"triadcensus.003"}\hlstd{,} \hlstr{"triadcensus.012"}\hlstd{,}
+              \hlstr{"triadcensus.102"}\hlstd{,} \hlstr{"triadcensus.021D"}\hlstd{,} \hlstr{"gwesp"}\hlstd{)}
+\hlstd{model.formula} \hlkwb{=} \hlstd{net}\hlopt{~}\hlkwd{triadcensus}\hlstd{(}\hlnum{0}\hlopt{:}\hlnum{3}\hlstd{)}\hlopt{+}\hlkwd{gwesp}\hlstd{(}\hlkwc{decay} \hlstd{=} \hlnum{0}\hlstd{,} \hlkwc{fixed}\hlstd{=}\hlnum{FALSE}\hlstd{,} \hlkwc{cutoff}\hlstd{=}\hlnum{30}\hlstd{)}\hlopt{-}\hlnum{1}
+\hlstd{graph_mode}\hlkwb{=}\hlstr{'digraph'}
+\hlstd{group}\hlkwb{=}\hlstr{'dnc'}
+\hlstd{alpha.glmnet}\hlkwb{=}\hlnum{1}
+\hlstd{directed}\hlkwb{=}\hlnum{TRUE}
+\hlstd{method} \hlkwb{<-} \hlstr{'bayesglm'}
+\hlstd{maxlag} \hlkwb{<-} \hlnum{3}
+\hlstd{lambda}\hlkwb{=}\hlnum{NA}
+\hlstd{intercept} \hlkwb{=} \hlkwd{c}\hlstd{(}\hlstr{"edges"}\hlstd{)}
+\hlstd{cdim} \hlkwb{<-} \hlkwd{length}\hlstd{(model.terms)}
+\hlstd{lagmat} \hlkwb{<-} \hlkwd{matrix}\hlstd{(}\hlkwd{sample}\hlstd{(}\hlkwd{c}\hlstd{(}\hlnum{0}\hlstd{,}\hlnum{1}\hlstd{),(maxlag}\hlopt{+}\hlnum{1}\hlstd{)}\hlopt{*}\hlstd{cdim,}\hlkwc{replace} \hlstd{=} \hlnum{TRUE}\hlstd{),}\hlkwc{ncol} \hlstd{= cdim)}
+\hlstd{ylag} \hlkwb{<-} \hlkwd{rep}\hlstd{(}\hlnum{1}\hlstd{,maxlag)}
+\hlstd{lagmat[}\hlnum{1}\hlstd{,]} \hlkwb{<-} \hlkwd{rep}\hlstd{(}\hlnum{0}\hlstd{,}\hlkwd{ncol}\hlstd{(lagmat))}
+\hlstd{out} \hlkwb{<-} \hlkwd{suppressWarnings}\hlstd{(}\hlkwd{paramEdge}\hlstd{(input_network,model.terms, model.formula,}
+                \hlkwc{graph_mode}\hlstd{=}\hlstr{"digraph"}\hlstd{,group,}\hlkwc{intercept} \hlstd{=} \hlkwd{c}\hlstd{(}\hlstr{"edges"}\hlstd{),}\hlkwc{exvar}\hlstd{=}\hlnum{NA}\hlstd{,}
+                \hlkwc{maxlag} \hlstd{=} \hlnum{3}\hlstd{,}
+                \hlkwc{lagmat} \hlstd{= lagmat,}
+                \hlkwc{ylag} \hlstd{=} \hlkwd{rep}\hlstd{(}\hlnum{1}\hlstd{,maxlag),}
+                \hlkwc{lambda} \hlstd{=} \hlnum{NA}\hlstd{,} \hlkwc{method}\hlstd{=}\hlstr{'bayesglm'}\hlstd{,}
+                \hlkwc{alpha.glmnet}\hlstd{=}\hlnum{1}\hlstd{))}
+\hlcom{#}
+
+\hlstd{start_network} \hlkwb{<-} \hlstd{input_network}
+\hlstd{inputcoeff} \hlkwb{<-} \hlstd{out}\hlopt{$}\hlstd{coef}\hlopt{$}\hlstd{coef}
+\hlstd{nvertex} \hlkwb{<-} \hlnum{47}
+\hlstd{ns} \hlkwb{<-} \hlnum{10}
+\hlstd{exvar} \hlkwb{<-} \hlnum{NA}
+\hlstd{input_network} \hlkwb{<-} \hlstd{rdNets[}\hlnum{1}\hlopt{:}\hlnum{6}\hlstd{]}
+\hlstd{maxlag} \hlkwb{<-} \hlnum{3}
+\hlstd{start_network} \hlkwb{<-} \hlstd{input_network}
+\hlstd{inputcoeff} \hlkwb{<-} \hlstd{out}\hlopt{$}\hlstd{coef}\hlopt{$}\hlstd{coef}
+\hlstd{nvertex} \hlkwb{<-} \hlnum{47}
+\hlstd{ns} \hlkwb{<-} \hlnum{10}
+\hlstd{exvar} \hlkwb{<-} \hlnum{NA}
+\hlstd{tmp} \hlkwb{<-} \hlkwd{suppressWarnings}\hlstd{(}\hlkwd{engineEdge}\hlstd{(}\hlkwc{start_network}\hlstd{=start_network,}\hlkwc{inputcoeff}\hlstd{=inputcoeff,}\hlkwc{ns}\hlstd{=ns,}
+                     \hlkwc{model.terms}\hlstd{=model.terms,} \hlkwc{model.formula}\hlstd{=model.formula,}
+                     \hlkwc{graph_mode}\hlstd{=graph_mode,}\hlkwc{group}\hlstd{=group,}\hlkwc{intercept}\hlstd{=intercept,}
+                     \hlkwc{exvar}\hlstd{=exvar,}
+                     \hlkwc{maxlag}\hlstd{=maxlag,}
+                     \hlkwc{lagmat}\hlstd{=lagmat,}
+                     \hlkwc{ylag}\hlstd{=ylag,}
+                     \hlkwc{lambda} \hlstd{=} \hlnum{NA}\hlstd{,} \hlkwc{method}\hlstd{=}\hlstr{'bayesglm'}\hlstd{,}
+                     \hlkwc{alpha.glmnet}\hlstd{=alpha.glmnet))}
+\end{alltt}
+\begin{verbatim}
+## [1] 1
+\end{verbatim}
+
+
+{\ttfamily\noindent\itshape\color{messagecolor}{\#\# Starting maximum pseudolikelihood estimation (MPLE):}}
+
+{\ttfamily\noindent\itshape\color{messagecolor}{\#\# Evaluating the predictor and response matrix.}}
+
+{\ttfamily\noindent\itshape\color{messagecolor}{\#\# Maximizing the pseudolikelihood.}}
+
+{\ttfamily\noindent\itshape\color{messagecolor}{\#\# Finished MPLE.}}
+
+{\ttfamily\noindent\itshape\color{messagecolor}{\#\# Stopping at the initial estimate.}}
+
+{\ttfamily\noindent\itshape\color{messagecolor}{\#\# Evaluating log-likelihood at the estimate.}}\begin{verbatim}
+## [1] 2
+\end{verbatim}
+
+
+{\ttfamily\noindent\itshape\color{messagecolor}{\#\# Starting maximum pseudolikelihood estimation (MPLE):\\\#\# Evaluating the predictor and response matrix.\\\#\# Maximizing the pseudolikelihood.\\\#\# Finished MPLE.\\\#\# Stopping at the initial estimate.\\\#\# Evaluating log-likelihood at the estimate.}}\begin{verbatim}
+## [1] 3
+\end{verbatim}
+
+
+{\ttfamily\noindent\itshape\color{messagecolor}{\#\# Starting maximum pseudolikelihood estimation (MPLE):\\\#\# Evaluating the predictor and response matrix.\\\#\# Maximizing the pseudolikelihood.\\\#\# Finished MPLE.\\\#\# Stopping at the initial estimate.\\\#\# Evaluating log-likelihood at the estimate.}}\begin{verbatim}
+## [1] 4
+\end{verbatim}
+
+
+{\ttfamily\noindent\itshape\color{messagecolor}{\#\# Starting maximum pseudolikelihood estimation (MPLE):\\\#\# Evaluating the predictor and response matrix.\\\#\# Maximizing the pseudolikelihood.\\\#\# Finished MPLE.\\\#\# Stopping at the initial estimate.\\\#\# Evaluating log-likelihood at the estimate.}}\begin{verbatim}
+## [1] 5
+\end{verbatim}
+
+
+{\ttfamily\noindent\itshape\color{messagecolor}{\#\# Starting maximum pseudolikelihood estimation (MPLE):\\\#\# Evaluating the predictor and response matrix.\\\#\# Maximizing the pseudolikelihood.\\\#\# Finished MPLE.\\\#\# Stopping at the initial estimate.\\\#\# Evaluating log-likelihood at the estimate.}}\begin{verbatim}
+## [1] 6
+\end{verbatim}
+
+
+{\ttfamily\noindent\itshape\color{messagecolor}{\#\# Starting maximum pseudolikelihood estimation (MPLE):\\\#\# Evaluating the predictor and response matrix.\\\#\# Maximizing the pseudolikelihood.\\\#\# Finished MPLE.\\\#\# Stopping at the initial estimate.\\\#\# Evaluating log-likelihood at the estimate.}}\begin{verbatim}
+## [1] 7
+\end{verbatim}
+
+
+{\ttfamily\noindent\itshape\color{messagecolor}{\#\# Starting maximum pseudolikelihood estimation (MPLE):\\\#\# Evaluating the predictor and response matrix.\\\#\# Maximizing the pseudolikelihood.\\\#\# Finished MPLE.\\\#\# Stopping at the initial estimate.\\\#\# Evaluating log-likelihood at the estimate.}}\begin{verbatim}
+## [1] 8
+\end{verbatim}
+
+
+{\ttfamily\noindent\itshape\color{messagecolor}{\#\# Starting maximum pseudolikelihood estimation (MPLE):\\\#\# Evaluating the predictor and response matrix.\\\#\# Maximizing the pseudolikelihood.\\\#\# Finished MPLE.\\\#\# Stopping at the initial estimate.\\\#\# Evaluating log-likelihood at the estimate.}}\begin{verbatim}
+## [1] 9
+\end{verbatim}
+
+
+{\ttfamily\noindent\itshape\color{messagecolor}{\#\# Starting maximum pseudolikelihood estimation (MPLE):\\\#\# Evaluating the predictor and response matrix.\\\#\# Maximizing the pseudolikelihood.\\\#\# Finished MPLE.\\\#\# Stopping at the initial estimate.\\\#\# Evaluating log-likelihood at the estimate.}}\begin{verbatim}
+## [1] 10
+\end{verbatim}
+
+
+{\ttfamily\noindent\itshape\color{messagecolor}{\#\# Starting maximum pseudolikelihood estimation (MPLE):\\\#\# Evaluating the predictor and response matrix.\\\#\# Maximizing the pseudolikelihood.\\\#\# Finished MPLE.\\\#\# Stopping at the initial estimate.\\\#\# Evaluating log-likelihood at the estimate.}}\begin{alltt}
+\hlkwd{par}\hlstd{(}\hlkwc{mfrow} \hlstd{=} \hlkwd{c}\hlstd{(}\hlnum{2}\hlstd{,}\hlnum{2}\hlstd{))}
+\hlkwd{binaryPlot}\hlstd{(input_network[[}\hlnum{1}\hlstd{]][, ],} \hlkwc{title} \hlstd{=} \hlstr{"Time point 6"}\hlstd{,} \hlkwc{axlabs} \hlstd{=} \hlnum{FALSE}\hlstd{)}
+\hlkwd{binaryPlot}\hlstd{(tmp}\hlopt{$}\hlstd{out_network[[}\hlnum{1}\hlstd{]][, ],} \hlkwc{title} \hlstd{=} \hlstr{"Time point 7 (simulated)"}\hlstd{,} \hlkwc{axlabs} \hlstd{=} \hlnum{FALSE}\hlstd{)}
+\hlkwd{binaryPlot}\hlstd{(tmp}\hlopt{$}\hlstd{out_network[[}\hlnum{2}\hlstd{]][, ],} \hlkwc{title} \hlstd{=} \hlstr{"Time point 8 (simulated)"}\hlstd{,} \hlkwc{axlabs} \hlstd{=} \hlnum{FALSE}\hlstd{)}
+\hlkwd{binaryPlot}\hlstd{(tmp}\hlopt{$}\hlstd{out_network[[}\hlnum{3}\hlstd{]][, ],} \hlkwc{title} \hlstd{=} \hlstr{"Time point 9 (simulated)"}\hlstd{,} \hlkwc{axlabs} \hlstd{=} \hlnum{FALSE}\hlstd{)}
+\end{alltt}
+\end{kframe}
+
+{\centering \includegraphics[width=\linewidth]{figure/Vignette-sim-blog-1} 
+
+}
+
+
+
+\end{knitrout}
+
+\subsection{Time series of parameter estimates}
+\label{sec:time-seri-param}
+
+As all the coefficients are calculated as a part of the simulation, they are also provided along with the simulated networks. We can plot the time series of the network parameters to see the quality of the simulations.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{plot.ts}\hlstd{(tmp}\hlopt{$}\hlstd{coefmat[,} \hlnum{1}\hlopt{:}\hlnum{10}\hlstd{],} \hlkwc{xy.labels}\hlstd{=}\hlnum{FALSE}\hlstd{,}
+        \hlkwc{main} \hlstd{=} \hlstr{"Estimated parameters from simulated networks"}\hlstd{,} \hlkwc{cex} \hlstd{=} \hlnum{0.8}\hlstd{)}
+\end{alltt}
+\end{kframe}
+
+{\centering \includegraphics[width=\linewidth]{figure/Vignette-param-ts-1} 
+
+}
+
+
+
+\end{knitrout}
+
+\subsection{Performance metrics}
+\label{sec:performance-metrics}
+
+
+We also provide some functions for assessing the quality of the simulated networks and make comparisons with holdout set or some other benchmarked networks. Specifically, there are functions for number of triangles, cluster coefficient and expectation of degree distribution has been implemented. We report the performance metrics for the input networks as well as the simulated networks for our example on blog data.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{perfMetrics} \hlkwb{<-}
+    \hlkwd{cbind}\hlstd{(}\hlkwd{c}\hlstd{(}\hlkwd{sapply}\hlstd{(tmp}\hlopt{$}\hlstd{out_network,} \hlkwa{function}\hlstd{(}\hlkwc{net}\hlstd{)} \hlkwd{ntriangles}\hlstd{(net[, ])),}
+            \hlkwd{sapply}\hlstd{(input_network,} \hlkwa{function}\hlstd{(}\hlkwc{net}\hlstd{)} \hlkwd{ntriangles}\hlstd{(net[, ]))),}
+          \hlkwd{c}\hlstd{(}\hlkwd{sapply}\hlstd{(tmp}\hlopt{$}\hlstd{out_network,} \hlkwa{function}\hlstd{(}\hlkwc{net}\hlstd{)} \hlkwd{clustCoef}\hlstd{(net[, ])),}
+            \hlkwd{sapply}\hlstd{(input_network,} \hlkwa{function}\hlstd{(}\hlkwc{net}\hlstd{)} \hlkwd{clustCoef}\hlstd{(net[, ]))),}
+          \hlkwd{c}\hlstd{(}\hlkwd{sapply}\hlstd{(tmp}\hlopt{$}\hlstd{out_network,} \hlkwa{function}\hlstd{(}\hlkwc{net}\hlstd{)} \hlkwd{expdeg}\hlstd{(net[, ])),}
+            \hlkwd{sapply}\hlstd{(input_network,} \hlkwa{function}\hlstd{(}\hlkwc{net}\hlstd{)} \hlkwd{expdeg}\hlstd{(net[, ]))))}
+\hlkwd{colnames}\hlstd{(perfMetrics)} \hlkwb{<-} \hlkwd{c}\hlstd{(}\hlstr{"Triangles"}\hlstd{,} \hlstr{"ClustCoefs"}\hlstd{,} \hlstr{"ExpDeg"}\hlstd{)}
+\hlstd{perfMetrics} \hlkwb{<-} \hlkwd{data.frame}\hlstd{(perfMetrics,} \hlkwc{row.names} \hlstd{=} \hlkwa{NULL}\hlstd{)}
+\hlstd{knitr}\hlopt{::}\hlkwd{kable}\hlstd{(perfMetrics,} \hlkwc{digits} \hlstd{=} \hlnum{3}\hlstd{,}
+             \hlkwc{caption} \hlstd{=}\hlstr{"Performance metrics for input and simulated networks."}\hlstd{)}
+\end{alltt}
+\end{kframe}\begin{table}
+
+\caption{\label{tab:comparison-metrics}Performance metrics for input and simulated networks.}
+\centering
+\begin{tabular}[t]{r|r|r}
+\hline
+Triangles & ClustCoefs & ExpDeg\\
+\hline
+249 & 0.439 & 9.383\\
+\hline
+247 & 0.450 & 9.128\\
+\hline
+248 & 0.470 & 9.000\\
+\hline
+246 & 0.473 & 8.915\\
+\hline
+246 & 0.473 & 8.915\\
+\hline
+246 & 0.468 & 8.872\\
+\hline
+260 & 0.456 & 9.553\\
+\hline
+260 & 0.474 & 9.170\\
+\hline
+246 & 0.470 & 8.872\\
+\hline
+250 & 0.478 & 8.915\\
+\hline
+248 & 0.476 & 8.745\\
+\hline
+257 & 0.482 & 9.085\\
+\hline
+247 & 0.475 & 8.915\\
+\hline
+246 & 0.473 & 8.915\\
+\hline
+245 & 0.472 & 8.915\\
+\hline
+248 & 0.474 & 9.000\\
+\hline
+\end{tabular}
+\end{table}
+
+
+\end{knitrout}
+\end{document}
+
+
 
 
 

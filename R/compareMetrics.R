@@ -58,7 +58,7 @@ vdegree <- function(x){
 ##' Calculate the expectation of degree distribution of network
 ##'
 ##' Given a network in adjacency matrix form, this calculates the expected
-##'     degree statsitic using igraph degree distribution function.
+##'     degree statistic using igraph degree distribution function.
 ##' @title expdeg
 ##' @param x adjacency matrix
 ##' @return scaler

@@ -4,10 +4,16 @@
 \alias{paramVertexOnlyGroup}
 \title{Parameter estimation for Vertex model only for a list of dynamic networks.}
 \usage{
-paramVertexOnlyGroup(InputNetwork, VertexStatsvec = rep(1, nvertexstats),
-  maxLag, VertexModelGroup = NA, VertexLag = rep(1, maxLag),
-  VertexAttLag = rep(1, maxLag), VertexLagMatrix = matrix(1, maxLag,
-  length(VertexStatsvec)), regMethod = "bayesglm")
+paramVertexOnlyGroup(
+  InputNetwork,
+  VertexStatsvec = rep(1, nvertexstats),
+  maxLag,
+  VertexModelGroup = NA,
+  VertexLag = rep(1, maxLag),
+  VertexAttLag = rep(1, maxLag),
+  VertexLagMatrix = matrix(1, maxLag, length(VertexStatsvec)),
+  regMethod = "bayesglm"
+)
 }
 \arguments{
 \item{InputNetwork}{Input network list.}

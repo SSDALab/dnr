@@ -4,9 +4,24 @@
 \alias{engineEdge}
 \title{Implementation of simulation engine for dynamic networks using smoothing estimates of change statistics.}
 \usage{
-engineEdge(start_network, inputcoeff, ns, model.terms, model.formula,
-  graph_mode, group, intercept, exvar, maxlag, lagmat, ylag, lambda = NA,
-  method = "bayesglm", alpha.glmnet, paramout = TRUE)
+engineEdge(
+  start_network,
+  inputcoeff,
+  ns,
+  model.terms,
+  model.formula,
+  graph_mode,
+  group,
+  intercept,
+  exvar,
+  maxlag,
+  lagmat,
+  ylag,
+  lambda = NA,
+  method = "bayesglm",
+  alpha.glmnet,
+  paramout = TRUE
+)
 }
 \arguments{
 \item{start_network}{Initial list of networks}

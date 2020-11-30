@@ -1,14 +1,14 @@
 Package: dnr
 Title: Simulate Dynamic Networks using Exponential Random Graph Models (ERGM) Family
-Version: 0.3.3
-Authors@R: c(person("Abhirup", "Mallik", email = "malli066@umn.edu",
+Version: 0.3.5
+Authors@R: c(person("Abhirup", "Mallik", email = "abhirupkgp@gmail.com",
                   role = c("aut", "cre")),
   		person("Zack", "Almquist", email = "almquist@umn.edu",
 		  role = c("aut")))
 Description: Functions are provided to fit temporal lag models to dynamic
     networks. The models are build on top of exponential random graph models (ERGM) framework. There are
     functions for simulating or forecasting networks for future time points.
-    Stable Multiple Time Step Simulation/Prediction from Lagged Dynamic Network Regression Models. Mallik, Almquist (2017, under review).
+    Abhirup Mallik & Zack W. Almquist (2019) Stable Multiple Time Step Simulation/Prediction From Lagged Dynamic Network Regression Models, Journal of Computational and Graphical Statistics, 28:4, 967-979, DOI: 10.1080/10618600.2019.1594834.
 Depends:
     R (>= 3.2.0),
     network,
@@ -23,4 +23,4 @@ Imports:
 Suggests:
     testthat, knitr
 VignetteBuilder: knitr    
-RoxygenNote: 6.0.1
+RoxygenNote: 7.1.1

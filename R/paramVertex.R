@@ -7,12 +7,12 @@
 ##' @param VertexLagMatrix binary matrix of size maxLag x 8.
 ##' @param VertexModelGroup Grouping term for vertex model. Must be from vertex attribute list.
 ##' @param VertexAttLag Lag vector for vertex group terms. Of length maxLag.
-##' @param dayClass Any network level present time attribute vector. Here used to indicate week/weeked as 0/1.
+##' @param dayClass Any network level present time attribute vector. Here used to indicate week/weekend as 0/1.
 ##' @param EdgeModelTerms Model terms in edge model.
 ##' @param EdgeModelFormula Model formula in edge model.
 ##' @param EdgeGroup Group terms in edge model.
 ##' @param EdgeIntercept Intercept for edge model.
-##' @param EdgeNetparam Network level parameter for edge model (currentyly only supported parameter is current network size).
+##' @param EdgeNetparam Network level parameter for edge model (currently only supported parameter is current network size).
 ##' @param EdgeExvar Extraneous variable for edge model.
 ##' @param EdgeLag binary vector of length maxLag.
 ##' @param EdgeLagMatrix binary matrix of dim maxLag x length(EdgeModelTerms)
@@ -96,16 +96,16 @@ paramVertex <- function(InputNetwork,
                         regMethod = "bayesglm",
                         paramout = FALSE){
     ## Section 1: Vertex model
-
+    
     gengroup <- function(input_network,group,net1){
         Vmax = input_network;
-
+        
         Vmax.label = network::get.vertex.attribute(Vmax[[1]], attrname = group);
-
+        
         Vmax = network.vertex.names(Vmax[[1]])
-
+        
         foo.index = which(Vmax%in%network.vertex.names(net1)==T)
-
+        
         if (is.null(group)){
             grouping = c(rep(1, floor(length(Vmax)/2)), rep(2, length(Vmax)-floor(length(Vmax)/2)))
         } else {
@@ -116,76 +116,76 @@ paramVertex <- function(InputNetwork,
         if(dirTF){
             grouping.perm = expand.grid(unique(grouping.sub),unique(grouping.sub))
             grouping.perm$indicator = seq_along(grouping.perm[,1])
-
-
+            
+            
             grouping.perm.full = expand.grid(unique(grouping),unique(grouping))
             grouping.perm.full$indicator = seq_along(grouping.perm.full[,1])
-
+            
             foo = matrix(NA,ncol=length(grouping.sub), nrow=length(grouping.sub))
-
-
+            
+            
             grouping.terms = sapply(1:nrow(grouping.perm.full),function(i) paste(group,grouping.perm.full[i,1],grouping.perm.full[i,2],sep=''))
             for (i in 1:length(grouping.sub)){
                 for(j in 1:length(grouping.sub)){
                     foo[i,j]=grouping.perm[,3] [which(grouping.perm[,1]==grouping.sub[i]&grouping.perm[,2]==grouping.sub[j])]
-                                        #print(i,j)
+                    #print(i,j)
                 }
             }
             for(i in grouping.perm.full$indicator){
-              pos <- 1
-              envir = as.environment(pos)
+                pos <- 1
+                envir = as.environment(pos)
                 assign(grouping.terms[i], (foo==grouping.perm.full$indicator[i])*1, envir = envir)
             }
         } else{
-
+            
             if(length(unique(grouping.sub))>1){
                 grouping.perm = data.frame(rbind(t(sapply(unique(grouping.sub), function(x)c(x,x))), t(combn(unique(grouping.sub),2))))
             } else{
                 grouping.perm = data.frame(t(c(unique(grouping.sub),unique(grouping.sub))))
             }
-
-
+            
+            
             grouping.perm$indicator = seq_along(grouping.perm[,1])
-
+            
             if(length(unique(grouping))>1){
                 grouping.perm.full = data.frame(rbind(t(sapply(unique(grouping), function(x)c(x,x))), t(combn(unique(grouping),2))))
             } else{
                 grouping.perm.full = data.frame(t(c(unique(grouping),unique(grouping))))
             }
-
-
+            
+            
             grouping.perm.full$indicator = seq_along(grouping.perm.full[,1])
-
+            
             foo = matrix(NA,ncol=length(grouping.sub), nrow=length(grouping.sub))
-
-
+            
+            
             grouping.terms = sapply(1:nrow(grouping.perm.full),function(i) paste(group,grouping.perm.full[i,1],grouping.perm.full[i,2],sep=''))
-
-
+            
+            
             for (i in 1:length(grouping.sub)){
                 for(j in 1:length(grouping.sub)){
                     ind1 = apply(grouping.perm[,1:2],1,function(x) all(x == c(grouping.sub[i], grouping.sub[j]))) + apply(grouping.perm[,1:2],1,function(x) all(x == c(grouping.sub[j], grouping.sub[i])));
                     ind1[which(ind1>0)] = 1;
                     foo[i,j]=grouping.perm[,3][which(ind1!=0)];
-
-                                        #foo[i,j]=grouping.perm[,3] [which((grouping.perm[,1]==grouping.sub[i]&grouping.perm[,2]==grouping.sub[j])|(grouping.perm[,1]==grouping.sub[j]&grouping.perm[,2]==grouping.sub[i]))]
-                                        #print(i,j)
+                    
+                    #foo[i,j]=grouping.perm[,3] [which((grouping.perm[,1]==grouping.sub[i]&grouping.perm[,2]==grouping.sub[j])|(grouping.perm[,1]==grouping.sub[j]&grouping.perm[,2]==grouping.sub[i]))]
+                    #print(i,j)
                 }
             }
-
+            
             for(i in grouping.perm.full$indicator){
-              pos <- 1
-              envir = as.environment(pos)
+                pos <- 1
+                envir = as.environment(pos)
                 assign(grouping.terms[i], (foo==grouping.perm.full$indicator[i])*1, envir = envir)
             }
         }
-
+        
         grouping.edgecov = sapply(1:nrow(grouping.perm.full), function(x) paste0('edgecov(',grouping.terms[x],')',sep=''))
         return(grouping.edgecov)
     }
-
-
-
+    
+    
+    
     ## Function for upscaling networks in a window
     windowUnion <- function(net.window){
         nwindow <- length(net.window)
@@ -201,7 +201,7 @@ paramVertex <- function(InputNetwork,
             adjunion[adjLagIdx, adjLagIdx] <- adjLag
             dirTF <- network::get.network.attribute(net.window[[i]], "directed")
             netUnion <- network(adjunion, directed = dirTF)
-
+            
             ## add vertex attributes
             vatbs <- network::list.vertex.attributes(net.window[[i]])
             vatbs <- vatbs[vatbs != "vertex.names"]
@@ -210,7 +210,7 @@ paramVertex <- function(InputNetwork,
                 vatbsCommon[adjLagIdx] <- network::get.vertex.attribute(net.window[[i]], vatb)
                 network::set.vertex.attribute(netUnion, vatb, vatbsCommon)
             }
-
+            
             ## add edge attributes
             eatbs <- network::list.edge.attributes(net.window[[i]])
             for(eatb in eatbs){
@@ -223,9 +223,9 @@ paramVertex <- function(InputNetwork,
         names(common.window) <- names(net.window)
         return(common.window)
     }
-
-
-
+    
+    
+    
     genintercept <- function(intercept,grouping.edgecov,netname){
         if(is.na(grouping.edgecov)||is.na(intercept)){
             if(is.na(grouping.edgecov)){
@@ -238,7 +238,7 @@ paramVertex <- function(InputNetwork,
         }
         return(formula)
     }
-
+    
     genformula <- function(model.formula,netname="net1"){
         term_formula = terms(model.formula);
         term_formula = attr(term_formula, 'term.labels');
@@ -247,9 +247,9 @@ paramVertex <- function(InputNetwork,
                                           collapse= "+")))
         return(formula1)
     }
-
-
-
+    
+    
+    
     
     ## Remove networks from InputNetowrk that are NA.
     InputNetwork <- rmNAnetworks(InputNetwork)
@@ -258,7 +258,7 @@ paramVertex <- function(InputNetwork,
     Vunion <- unique(unlist(lapply(InputNetwork, network.vertex.names.1)))
     Vunion <- na.omit(Vunion)
     nv <- length(Vunion)
-
+    
     ## is the network directed?
     ## we are using 1st network as representative network hoping these
     ## attributes wont change.
@@ -266,7 +266,7 @@ paramVertex <- function(InputNetwork,
     if(isdirected) {
         gmode <- "digraph"
     } else gmode <- "graph"
-
+    
     net1.vstats <- vertexstats(InputNetwork[[1]], gmode = gmode)
     nvertexstats <- ncol(net1.vstats)
     ## Change this number when making modification in
@@ -290,92 +290,116 @@ paramVertex <- function(InputNetwork,
             x.lag <- numeric(length(Vunion))
             current.vnames <- network.vertex.names.1(x.current)
             x.lag[match(current.vnames, Vunion)] <- 1
+            x.lag <- matrix(x.lag)
+            colnames(x.lag) <- paste0("Lag.",(1+maxLag-j),sep="")
             xlags.current <- cbind(xlags.current, x.lag)
             current.vstats <- vertexstats(x.current, gmode = "digraph")
             verstats.lag <- matrix(0, nrow = length(Vunion), ncol = nvertexstats)
             rownames(verstats.lag) <- Vunion
             verstats.lag[match(rownames(current.vstats),
                                rownames(verstats.lag)), ] <- current.vstats
+            colnames(verstats.lag) <- paste0(vstatNames, ".Lag.", (1+maxLag-j),sep="")
             vstats.current <- cbind(vstats.current, verstats.lag)
-
-###############################
-            if(!is.na(VertexModelGroup)){
-                veratts.lag <- numeric(length(Vunion))
-                veratts.lag[match(current.vnames, Vunion)] <-
-                    network::get.vertex.attribute(x.current, VertexModelGroup)
-                veratts.current <- cbind(veratts.current, veratts.lag)
+            
+            ###############################
+            #             if(!is.na(VertexModelGroup)){
+            #                 veratts.lag <- numeric(length(Vunion))
+            #                 veratts.lag[match(current.vnames, Vunion)] <-
+            #                     network::get.vertex.attribute(x.current, VertexModelGroup)
+            #                 veratts.current <- cbind(veratts.current, veratts.lag)
+            #             }
+            if(!any(is.na(VertexModelGroup))){
+                veratts.lag.combined = NULL
+                for (vertAtt in VertexModelGroup){
+                    veratts.lag <- numeric(length(Vunion))
+                    veratts.lag[match(current.vnames, Vunion)] <-
+                        network::get.vertex.attribute(x.current, vertAtt)
+                    veratts.lag <- matrix(veratts.lag)
+                    colnames(veratts.lag) <- paste0(vertAtt, ".Lag", j, sep="")
+                    veratts.lag.combined <- cbind(veratts.lag.combined, veratts.lag)
+                }
+                veratts.current <- cbind(veratts.current, veratts.lag.combined)
             }
-
+            
         }
         net.current <- InputNetwork[[i + maxLag]]
         if(sum(!is.na(dayClass)) > 0) {
             ## we add network level exogenous variable here.
             day.current <- dayClass[i + maxLag]
+            day.current <- matrix(day.current, nrow(xlags.current), 1)
+            colnames(day.current) <- "NetworkAttribute"
             xlags.current <- cbind(xlags.current, day.current)
         }
         
         y.current <- numeric(length(Vunion))
         current.vnames <- network.vertex.names.1(net.current)
         y.current[match(current.vnames, Vunion)] <- 1
-
+        
         y <- c(y, y.current)
         x.Nets <- rbind(x.Nets, xlags.current)
         x.vstats <- rbind(x.vstats, vstats.current)
-###############################
-        if(!is.na(VertexModelGroup)){
+        ###############################
+        if(!any(is.na(VertexModelGroup))){
             x.vatts <- rbind(x.vatts, veratts.current)
         }
-
+        
     }
-
-    for(i in seq_len(NCOL(x.Nets) - 1)){
-        colnames(x.Nets)[i] <- paste0("lag", i, sep = "")
-    }
-    colnames(x.Nets)[ncol(x.Nets)] <- "Day"    
-###############################
-    if(!is.na(VertexModelGroup)){
-        for(i in seq_len(NCOL(x.vatts))){
-            colnames(x.vatts)[i] <- paste0("attribLag", i, sep = "")
-        }
-    }
-
     
-    cnames <- numeric(ncol(x.vstats))
-    for(i in seq_len(maxLag)){
-        for(j in seq_len(nvertexstats)){
-            cnames[(i - 1)*nvertexstats + j] <- 
-                paste0(vstatNames[j],"Lag",i, sep = "")
-        }
-    }
-    colnames(x.vstats) <- cnames
-    if(!is.na(VertexModelGroup)){
-        XYdata <- cbind(y, x.Nets, x.vatts, x.vstats)
+    #     for(i in seq_len(NCOL(x.Nets) - 1)){
+    #         colnames(x.Nets)[i] <- paste0("lag", i, sep = "")
+    #     }
+    #     colnames(x.Nets)[ncol(x.Nets)] <- "Day"   
+    ###############################
+    #     if(!any(is.na(VertexModelGroup))){
+    #         for(i in seq_len(NCOL(x.vatts))){
+    #             colnames(x.vatts)[i] <- paste0("attribLag", i, sep = "")
+    #         }
+    #     }
+    
+    
+    #     cnames <- numeric(ncol(x.vstats))
+    #     for(i in seq_len(maxLag)){
+    #         for(j in seq_len(nvertexstats)){
+    #             cnames[(i - 1)*nvertexstats + j] <- 
+    #                 paste0(vstatNames[j],".Lag",i, sep = "")
+    #         }
+    #     }
+    #     colnames(x.vstats) <- cnames
+    
+    y <- matrix(y)
+    colnames(y) <- "y"
+    
+    if(!any(is.na(VertexModelGroup))){
+        XYdata <- cbind.data.frame(y, x.Nets, x.vatts, x.vstats)
     } else{
-        XYdata <- cbind(y, x.Nets, x.vstats)
+        XYdata <- cbind.data.frame(y, x.Nets, x.vstats)
     }
     
-    ## colnames(XYdata) <- NULL
-    XYdata <- as.data.frame(XYdata)
-    colnames(XYdata)[1] <- "y"
+    
     ## subset
+    # terms: from right: vertexStats, vertexAttributes, networkAttributes, Lags, Y
+    # vertexStats:
     VertexLagvec <- c(t(VertexLagMatrix))
-    if(sum(!is.na(dayClass)) > 0) VertexLagvec <- c(1, VertexLagvec)
-    if(maxLag > 1) {
-        if(!is.na(VertexModelGroup)){
-            VertexLagvec <-
-                c(VertexLag, VertexAttLag,VertexLagvec)
-        } else {
-            VertexLagvec <-
-                c(VertexLag,VertexLagvec)
+    #vertexAttributes:
+    if(!any(is.na(VertexModelGroup))){
+        for(i in VertexModelGroup){
+            VertexLagvec <- c(1, VertexLagvec)
         }
     }
+    #networkAttributes:
+    if(sum(!is.na(dayClass)) > 0) VertexLagvec <- c(1, VertexLagvec)
+    #lags:
+    VertexLagvec <- c(VertexLag, VertexLagvec)
+    # Y
     VertexLagvec <- c(1, VertexLagvec)
+    
     VertexLagvec <- VertexLagvec == 1
     
     VertexRegout <- regEngine(XYdata[, VertexLagvec], method = regMethod)
-
+    
+    
     ## end of vertex only regression ###
-
+    
     ## section 2: edge conditional on vertex:
     matout <- NULL
     fullPredictorStack0 <- NULL
@@ -386,24 +410,24 @@ paramVertex <- function(InputNetwork,
     } else{
         grouping.edgecov <- gengroup(InputNetwork, EdgeGroup, InputNetwork[[1]])
     }
-
+    
     for(i in 1:(netlength - maxLag)){
         net.window <- InputNetwork[i : (i + maxLag)]
         common.window <- windowUnion(net.window)
         net.current <- common.window[[maxLag + 1]]
-
+        
         netsize.window <- network.size.1(net.current)
         m <- matrix(1:(netsize.window*netsize.window), nrow = netsize.window, ncol = netsize.window)
         
-
-                                        #Construction of formula##
-
+        
+        #Construction of formula##
+        
         if(is.na(EdgeIntercept)&&is.na(EdgeGroup)){
             csmodel <- NULL
         } else{
             formula <- genintercept(EdgeIntercept,grouping.edgecov,
                                     netname="net.current")
-                                        #TODO: Add support for exogenous variable later
+            #TODO: Add support for exogenous variable later
             if(!is.na(EdgeExvar)){
                 formula <- as.formula(paste(c(formula,paste0("edgecov(",EdgeExvar,")",sep="")),collapse = "+"))
             }
@@ -412,8 +436,8 @@ paramVertex <- function(InputNetwork,
             colnames(csintercept) <- colnames(mplemat$predictor)[1:(ncol(mplemat$predictor)-1)]
             csmodel <- csintercept
         }
-                                        #fit model terms
-                                        #Comment: We always count down!
+        #fit model terms
+        #Comment: We always count down!
         if(sum(is.na(EdgeModelFormula)) == 0){
             for(j in maxLag:1){
                 formula <- genformula(EdgeModelFormula,netname = "common.window[[j]]")
@@ -422,7 +446,7 @@ paramVertex <- function(InputNetwork,
                 csmodel <- cbind(csmodel, edgeLag.tmp);
             }
         }
-###############################
+        ###############################
         ## fit EdgeNetparam terms (only supported term is logSize)
         ## In future, more terms can be added
         ## REMEMBER to update the subsetting section!!
@@ -440,22 +464,22 @@ paramVertex <- function(InputNetwork,
                 csmodel <- cbind(csmodel, logCurrNetSize)
             }
         }
-
+        
         ## We add network level exogenous variables here
         ## Update the subsetting section also.
         if(sum(!is.na(dayClass)) > 0) {
             day.current <- dayClass[i + maxLag]
             if(gmode == "digraph") {
                 dayEffect <- rep(day.current,
-                                       netsize.window*(netsize.window - 1))
+                                 netsize.window*(netsize.window - 1))
             } else {
                 dayEffect <- rep(day.current,
-                                       netsize.window*(netsize.window - 1)/2)
+                                 netsize.window*(netsize.window - 1)/2)
             }
             csmodel <- cbind(csmodel, dayEffect)
         }
-
-###############################
+        
+        ###############################
         
         ## fit the lag terms
         ## Comment: Counting down.
@@ -471,14 +495,14 @@ paramVertex <- function(InputNetwork,
                 lagnames[j] <- paste("lag",j,sep = "")
             }
             colnames(lagstats) <- lagnames
-                                        #response
+            #response
             y <- sna::gvectorize(net.current[,],mode=gmode, censor.as.na=FALSE)
             mat <- data.frame(cbind(y,csmodel,lagstats))
         } else {
             y <- sna::gvectorize(net.current[,],mode=gmode, censor.as.na=FALSE)
             mat <- data.frame(cbind(y,csmodel))
         }
-
+        
         ## imputed matrix1: with 0
         ## create empty matrix of 0 of full dim. (length(Vunion)).
         ## num of rows: num of edges. num of cols: cols in mat.
@@ -504,7 +528,7 @@ paramVertex <- function(InputNetwork,
         fullPredictorStack1 <- rbind(fullPredictorStack1, fullPredictor1)
         fullPredictorStackNA <- rbind(fullPredictorStackNA, fullPredictorNA)
     }
-
+    
     ## subsetting
     if(sum(!is.na(csintercept)) > 0){
         lagvec <- rep(1,NCOL(csintercept))
@@ -522,11 +546,11 @@ paramVertex <- function(InputNetwork,
     if(maxLag > 1) lagvec <- c(lagvec,EdgeLag)
     lagvec <- c(1,lagvec)
     lagvec <- lagvec==1
-                                        #regression
+    #regression
     if(paramout){
         out <- regEngine(matout[,lagvec],regMethod)
     } else out <- NULL
-
+    
     return(list(EdgeCoef=out$coef,
                 EdgeFit = out,
                 Edgemplematfull=matout,
