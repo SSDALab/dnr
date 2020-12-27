@@ -17,7 +17,7 @@ Calculate the expectation of degree distribution of network
 }
 \details{
 Given a network in adjacency matrix form, this calculates the expected
-    degree statsitic using igraph degree distribution function.
+    degree statistic using igraph degree distribution function.
 }
 \examples{
 expdeg(beach[[1]][, ])

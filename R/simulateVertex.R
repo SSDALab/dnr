@@ -1,6 +1,6 @@
 ##' @title Simulation Engine for dynamic Vertex case.
 ##' @description Simulation engine for dynamic networks with variable number of vertices. 
-##' Implements exponential family based hierachical model for vertice and the edges.
+##' Implements exponential family based hierarchical model for vertices and the edges.
 ##' @param InputNetwork List of input networks
 ##' @param numSim number of time points to simulate
 ##' @param maxLag maximum Lag
@@ -148,7 +148,7 @@ engineVertex <- function(InputNetwork,
 
         ## fix dayClass, if Day is present
         if(sum(!is.na(dayClassObserved)) > 0) {
-            Vstats.smooth[, "Day"] <- dayClassFuture[simcount]
+            Vstats.smooth[, "NetworkAttribute"] <- dayClassFuture[simcount]
         }
 
         ## generate vertices:

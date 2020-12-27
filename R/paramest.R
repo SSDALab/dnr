@@ -16,11 +16,12 @@
 ##' @param paramout TRUE by default. if parameters are needed.
 ##' @return list with elements:
 ##'   coef: coefficients
-##'   mplematfull: full martix of change statistics
+##'   mplematfull: full matrix of change statistics
 ##'   mplemat: subset of matrix of change statistics
 ##' @author Abhirup
 ##' @export
 ##' @examples 
+##'\dontrun{
 ##' input_network=rdNets[1:6]
 ##' model.terms=c("triadcensus.003", "triadcensus.012", "triadcensus.102", "triadcensus.021D", "gwesp");
 ##' model.formula = net~triadcensus(0:3)+gwesp(decay=0, fixed=FALSE, cutoff=30)-1;
@@ -43,7 +44,7 @@
 ##'                                        replace = TRUE),ncol = cdim),
 ##'                 ylag = rep(1,maxlag),
 ##'                 lambda = NA, method='bayesglm',
-##'                 alpha.glmnet=1)
+##'                 alpha.glmnet=1)}
 ##' 
 
 paramEdge <- function(input_network,model.terms, model.formula,
@@ -159,8 +160,8 @@ paramEdge <- function(input_network,model.terms, model.formula,
 
 
   genintercept <- function(intercept,grouping.edgecov,netname){
-    if(is.na(grouping.edgecov)||is.na(intercept)){
-      if(is.na(grouping.edgecov)){
+    if(any(is.na(grouping.edgecov))||any(is.na(intercept))){
+      if(any(is.na(grouping.edgecov))){
         formula <- as.formula(paste(paste0(netname,"~",sep=""),paste(c(intercept,"edgecov(m)"),collapse = "+")))
       } else {
         formula <- as.formula(paste(paste0(netname,"~",sep=""),paste(c(grouping.edgecov,"edgecov(m)"),collapse = "+")))

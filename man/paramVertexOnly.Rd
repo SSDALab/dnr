@@ -4,9 +4,15 @@
 \alias{paramVertexOnly}
 \title{Parameter estimation for Vertex model only for a list of dynamic networks.}
 \usage{
-paramVertexOnly(InputNetwork, VertexStatsvec = rep(1, nvertexstats), maxLag,
-  VertexLag = rep(1, maxLag), VertexLagMatrix = matrix(1, maxLag,
-  length(VertexStatsvec)), dayClass = NA, regMethod = "bayesglm")
+paramVertexOnly(
+  InputNetwork,
+  VertexStatsvec = rep(1, nvertexstats),
+  maxLag,
+  VertexLag = rep(1, maxLag),
+  VertexLagMatrix = matrix(1, maxLag, length(VertexStatsvec)),
+  dayClass = NA,
+  regMethod = "bayesglm"
+)
 }
 \arguments{
 \item{InputNetwork}{Input network list.}
@@ -20,7 +26,7 @@ paramVertexOnly(InputNetwork, VertexStatsvec = rep(1, nvertexstats), maxLag,
 \item{VertexLagMatrix}{Binary matrix indicating lagged vertex statistics in
 the model.}
 
-\item{dayClass}{Any network level present time attribute vector. Here used to indicate week/weeked as 0/1.}
+\item{dayClass}{Any network level present time attribute vector. Here used to indicate week/weekend as 0/1.}
 
 \item{regMethod}{one of "glm", "glmnet", "bayesglm"}
 }

@@ -5,7 +5,7 @@
 ##' @param VertexLag Binary vector of size maxLag, indicating Lag terms in the model.
 ##' @param VertexLagMatrix Binary matrix indicating lagged vertex statistics in
 ##'     the model.
-##' @param dayClass Any network level present time attribute vector. Here used to indicate week/weeked as 0/1.
+##' @param dayClass Any network level present time attribute vector. Here used to indicate week/weekend as 0/1.
 ##' @param regMethod one of "glm", "glmnet", "bayesglm"
 ##' @return List of 3 elements:\cr
 ##' VertexFit: Output from regEngine. \cr

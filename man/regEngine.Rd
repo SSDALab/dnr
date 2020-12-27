@@ -4,8 +4,13 @@
 \alias{regEngine}
 \title{General purpose regression engine for the methods bayesglm, glm and glmnet}
 \usage{
-regEngine(XYdata, method = "bayesglm", regIntercept = FALSE, lambda = NA,
-  alpha = 1)
+regEngine(
+  XYdata,
+  method = "bayesglm",
+  regIntercept = FALSE,
+  lambda = NA,
+  alpha = 1
+)
 }
 \arguments{
 \item{XYdata}{matrix with X and Y columns. First column is named as y, other columns are X.}

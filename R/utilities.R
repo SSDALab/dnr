@@ -12,78 +12,78 @@ regEngine <- function(XYdata,
                       regIntercept = FALSE,
                       lambda = NA,
                       alpha = 1){
-    if(method == "glmnet"){
-        if(is.na(lambda)){
-            mSelect <- glmnet::cv.glmnet(
-                                   data.matrix(XYdata[, -1]),
-                                   as.vector(XYdata[, 1]),
-                                   family = "binomial",
-                                   alpha = alpha)
-            lambda <- mSelect$lambda.min
-        }
-        mFit <- glmnet::glmnet(data.matrix(XYdata[, -1]),
-                               as.vector(XYdata[, 1]),
-                               family = "binomial",
-                               alpha = alpha,
-                               lambda = lambda,
-                               intercept = regIntercept)
-        mCoef <- setNames(as.vector(mFit$beta),
-                          colnames(XYdata[, -1]))
-        mSE <- NA
-        out <- list(coef = mCoef,
-                    se = mSE,
-                    lambda = lambda,
-                    fit = mFit)
-    } else if (method == "glm") {
-        if(regIntercept){
-            mFit <- glm(y ~ ., data = XYdata,
-                        family = binomial(link = "logit"))
-            mSummery <- (summary(mFit))
-            mCoef <- mFit$coefficients[-1]
-            mSE <- numeric(length(mCoef))
-            mSE[is.na(mCoef)] <- 0
-            mSE[!is.na(mCoef)] <- mSummery$coefficients[-1 , 2]
-            names(mSE) <- colnames(XYdata[, -1])
-        } else{
-            mFit <- glm(y ~ . -1, data = XYdata,
-                        family = binomial(link = "logit"))
-                        mSummery <- (summary(mFit))
-            mCoef <- mFit$coefficients
-            mSE <- numeric(length(mCoef))
-            mSE[is.na(mCoef)] <- 0
-            mSE[!is.na(mCoef)] <- mSummery$coefficients[ , 2]
-            names(mSE) <- colnames(XYdata[, -1])
-        }
-        out <- list(coef = mCoef,
-                    se = mSE,
-                    lambda = lambda,
-                    fit = mFit)
-    } else if(method == "bayesglm"){
-        if(regIntercept) {
-            mFit <- arm::bayesglm(y ~., data = XYdata,
-                                  family = binomial(link = "logit"))
-            mSummery <- (summary(mFit))
-            mCoef <- mFit$coefficients[-1]
-            mSE <- numeric(length(mCoef))
-            mSE[is.na(mCoef)] <- 0
-            mSE[!is.na(mCoef)] <- mSummery$coefficients[-1 , 2]
-            names(mSE) <- colnames(XYdata[, -1])
-        } else {
-            mFit <- arm::bayesglm(y ~ . -1, data = XYdata,
-                                  family = binomial(link = "logit"))
-            mSummery <- (summary(mFit))
-            mCoef <- mFit$coefficients
-            mSE <- numeric(length(mCoef))
-            mSE[is.na(mCoef)] <- 0
-            mSE[!is.na(mCoef)] <- mSummery$coefficients[ , 2]
-            names(mSE) <- colnames(XYdata[, -1])
-        }
-        out <- list(coef = mCoef,
-                    se = mSE,
-                    lambda = lambda,
-                    fit = mFit)
+  if(method == "glmnet"){
+    if(is.na(lambda)){
+      mSelect <- glmnet::cv.glmnet(
+        data.matrix(XYdata[, -1]),
+        as.vector(XYdata[, 1]),
+        family = "binomial",
+        alpha = alpha)
+      lambda <- mSelect$lambda.min
     }
-    return(out)
+    mFit <- glmnet::glmnet(data.matrix(XYdata[, -1]),
+                           as.vector(XYdata[, 1]),
+                           family = "binomial",
+                           alpha = alpha,
+                           lambda = lambda,
+                           intercept = regIntercept)
+    mCoef <- setNames(as.vector(mFit$beta),
+                      colnames(XYdata[, -1]))
+    mSE <- NA
+    out <- list(coef = mCoef,
+                se = mSE,
+                lambda = lambda,
+                fit = mFit)
+  } else if (method == "glm") {
+    if(regIntercept){
+      mFit <- glm(y ~ ., data = XYdata,
+                  family = binomial(link = "logit"))
+      mSummery <- (summary(mFit))
+      mCoef <- mFit$coefficients[-1]
+      mSE <- numeric(length(mCoef))
+      mSE[is.na(mCoef)] <- 0
+      mSE[!is.na(mCoef)] <- mSummery$coefficients[-1 , 2]
+      names(mSE) <- colnames(XYdata[, -1])
+    } else{
+      mFit <- glm(y ~ . -1, data = XYdata,
+                  family = binomial(link = "logit"))
+      mSummery <- (summary(mFit))
+      mCoef <- mFit$coefficients
+      mSE <- numeric(length(mCoef))
+      mSE[is.na(mCoef)] <- 0
+      mSE[!is.na(mCoef)] <- mSummery$coefficients[ , 2]
+      names(mSE) <- colnames(XYdata[, -1])
+    }
+    out <- list(coef = mCoef,
+                se = mSE,
+                lambda = lambda,
+                fit = mFit)
+  } else if(method == "bayesglm"){
+    if(regIntercept) {
+      mFit <- arm::bayesglm(y ~., data = XYdata,
+                            family = binomial(link = "logit"))
+      mSummery <- (summary(mFit))
+      mCoef <- mFit$coefficients[-1]
+      mSE <- numeric(length(mCoef))
+      mSE[is.na(mCoef)] <- 0
+      mSE[!is.na(mCoef)] <- mSummery$coefficients[-1 , 2]
+      names(mSE) <- colnames(XYdata[, -1])
+    } else {
+      mFit <- arm::bayesglm(y ~ . -1, data = XYdata,
+                            family = binomial(link = "logit"))
+      mSummery <- (summary(mFit))
+      mCoef <- mFit$coefficients
+      mSE <- numeric(length(mCoef))
+      mSE[is.na(mCoef)] <- 0
+      mSE[!is.na(mCoef)] <- mSummery$coefficients[ , 2]
+      names(mSE) <- colnames(XYdata[, -1])
+    }
+    out <- list(coef = mCoef,
+                se = mSE,
+                lambda = lambda,
+                fit = mFit)
+  }
+  return(out)
 }
 
 
@@ -118,57 +118,57 @@ ungvectorize <- function(x,nvertex,gmode){
 ##' @export
 
 binaryPlot <- function(x, axlabs = TRUE,...){
-    xmin <- min(x)
-    xmax <- max(x)
-    yLabels <- rownames(x)
-    xLabels <- colnames(x)
-    title <-c()
-    if( length(list(...)) ){
-        Lst <- list(...)
-        if( !is.null(Lst$zlim) ){
-            min <- Lst$zlim[1]
-            max <- Lst$zlim[2]
-        }
-        if( !is.null(Lst$yLabels) ){
-            yLabels <- c(Lst$yLabels)
-        }
-        if( !is.null(Lst$xLabels) ){
-            xLabels <- c(Lst$xLabels)
-        }
-        if( !is.null(Lst$title) ){
-            title <- Lst$title
-        }
+  xmin <- min(x)
+  xmax <- max(x)
+  yLabels <- rownames(x)
+  xLabels <- colnames(x)
+  title <-c()
+  if( length(list(...)) ){
+    Lst <- list(...)
+    if( !is.null(Lst$zlim) ){
+      min <- Lst$zlim[1]
+      max <- Lst$zlim[2]
     }
-                                        # check for null values
-    if( is.null(xLabels) ){
-        xLabels <- c(1:ncol(x))
+    if( !is.null(Lst$yLabels) ){
+      yLabels <- c(Lst$yLabels)
     }
-    if( is.null(yLabels) ){
-        yLabels <- c(1:nrow(x))
+    if( !is.null(Lst$xLabels) ){
+      xLabels <- c(Lst$xLabels)
     }
-                                        # Reverse x
-    reverse <- nrow(x) : 1
-    yLabels <- yLabels[reverse]
-    x <- x[reverse,]
-    image(1:length(xLabels), 1:length(yLabels), t(x),
-          col=c("#cccccc", "#525252"), xlab="",
-          ylab="", axes=FALSE, zlim=c(xmin,xmax))
-    if( !is.null(title) ){
-        title(main=title)
+    if( !is.null(Lst$title) ){
+      title <- Lst$title
     }
-    if(axlabs){
-        axis(BELOW<-1, at=1:length(xLabels), labels=xLabels, cex.axis=0.7)
-        axis(LEFT <-2, at=1:length(yLabels), labels=yLabels, las= HORIZONTAL<-1,
-             cex.axis=0.7)
-    }
-    grid(NULL, NULL, col = "#969696", lty = 6)
+  }
+  # check for null values
+  if( is.null(xLabels) ){
+    xLabels <- c(1:ncol(x))
+  }
+  if( is.null(yLabels) ){
+    yLabels <- c(1:nrow(x))
+  }
+  # Reverse x
+  reverse <- nrow(x) : 1
+  yLabels <- yLabels[reverse]
+  x <- x[reverse,]
+  image(1:length(xLabels), 1:length(yLabels), t(x),
+        col=c("#cccccc", "#525252"), xlab="",
+        ylab="", axes=FALSE, zlim=c(xmin,xmax))
+  if( !is.null(title) ){
+    title(main=title)
+  }
+  if(axlabs){
+    axis(BELOW<-1, at=1:length(xLabels), labels=xLabels, cex.axis=0.7)
+    axis(LEFT <-2, at=1:length(yLabels), labels=yLabels, las= HORIZONTAL<-1,
+         cex.axis=0.7)
+  }
+  grid(NULL, NULL, col = "#969696", lty = 6)
 }
 
 
 ilogit <- function(x) 1/(1+exp(-x))
 thresh <- function(x, hi = 0.95, lo = 0.05) {
-    x <- ifelse(x>hi, hi, x)
-    x <- ifelse(x<lo, lo, x)
+  x <- ifelse(x>hi, hi, x)
+  x <- ifelse(x<lo, lo, x)
 }
 
 ## supporting functions:

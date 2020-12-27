@@ -1,9 +1,0 @@
-# Add edgecov(log(Nvertex)) as exvar for edge model
-# Add exvar in paramVertex
-# exvar should be able to take in functions that would evaluated in edgecov.
-# like log(nVertex)
-# Change interface for paramest and simulate_engine
-# Implement a non smooth version of engineVertex and compare
-
-## add comparison metrics to dnr
-## referee pass through of manuscript

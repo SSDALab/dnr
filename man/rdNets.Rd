@@ -4,7 +4,9 @@
 \name{rdNets}
 \alias{rdNets}
 \title{Blog citation network}
-\format{A list with 484 elements. Each element is a network of size 47 number of vertices.}
+\format{
+A list with 484 elements. Each element is a network of size 47 number of vertices.
+}
 \source{
 Butts, C. T. and B. R. Cross (2009). Change and external events in computer-mediated citation networks, English language weblogs and the 2004 u.s. electoral cycle. The Journal of Social Structure 10 (3), 1-29.
 }

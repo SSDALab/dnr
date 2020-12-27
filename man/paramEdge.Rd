@@ -4,11 +4,23 @@
 \alias{paramEdge}
 \title{Parameter estimation for static vertex case.}
 \usage{
-paramEdge(input_network, model.terms, model.formula, graph_mode = "digraph",
-  group, intercept = c("edges"), exvar = NA, maxlag = 3,
-  lagmat = matrix(sample(c(0, 1), (maxlag + 1) * length(model.terms), replace
-  = T), ncol = length(model.terms)), ylag = rep(1, maxlag), lambda = NA,
-  method = "glmnet", alpha.glmnet = 1, paramout = TRUE)
+paramEdge(
+  input_network,
+  model.terms,
+  model.formula,
+  graph_mode = "digraph",
+  group,
+  intercept = c("edges"),
+  exvar = NA,
+  maxlag = 3,
+  lagmat = matrix(sample(c(0, 1), (maxlag + 1) * length(model.terms), replace = T),
+    ncol = length(model.terms)),
+  ylag = rep(1, maxlag),
+  lambda = NA,
+  method = "glmnet",
+  alpha.glmnet = 1,
+  paramout = TRUE
+)
 }
 \arguments{
 \item{input_network}{Input network.}
@@ -42,13 +54,14 @@ paramEdge(input_network, model.terms, model.formula, graph_mode = "digraph",
 \value{
 list with elements:
   coef: coefficients
-  mplematfull: full martix of change statistics
+  mplematfull: full matrix of change statistics
   mplemat: subset of matrix of change statistics
 }
 \description{
 Parameter estimation for the static vertex case.
 }
 \examples{
+\dontrun{
 input_network=rdNets[1:6]
 model.terms=c("triadcensus.003", "triadcensus.012", "triadcensus.102", "triadcensus.021D", "gwesp");
 model.formula = net~triadcensus(0:3)+gwesp(decay=0, fixed=FALSE, cutoff=30)-1;
@@ -71,7 +84,7 @@ out <- paramEdge(input_network,model.terms, model.formula,
                                        replace = TRUE),ncol = cdim),
                 ylag = rep(1,maxlag),
                 lambda = NA, method='bayesglm',
-                alpha.glmnet=1)
+                alpha.glmnet=1)}
 
 }
 \author{

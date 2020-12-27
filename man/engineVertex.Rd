@@ -4,14 +4,28 @@
 \alias{engineVertex}
 \title{Simulation Engine for dynamic Vertex case.}
 \usage{
-engineVertex(InputNetwork, numSim, maxLag, VertexStatsvec = rep(1,
-  nvertexstats), VertexLag = rep(1, maxLag), VertexLagMatrix = matrix(1,
-  maxLag, length(VertexStatsvec)), VertexModelGroup = NA,
-  VertexAttLag = rep(1, maxLag), dayClassObserved = NA,
-  dayClassFuture = NA, EdgeModelTerms, EdgeModelFormula, EdgeGroup = NA,
-  EdgeIntercept = c("edges"), EdgeNetparam = NA, EdgeExvar = NA,
-  EdgeLag = rep(1, maxLag), EdgeLagMatrix = matrix(1, maxLag,
-  length(EdgeModelTerms)), regMethod = "bayesglm", paramout = TRUE)
+engineVertex(
+  InputNetwork,
+  numSim,
+  maxLag,
+  VertexStatsvec = rep(1, nvertexstats),
+  VertexLag = rep(1, maxLag),
+  VertexLagMatrix = matrix(1, maxLag, length(VertexStatsvec)),
+  VertexModelGroup = NA,
+  VertexAttLag = rep(1, maxLag),
+  dayClassObserved = NA,
+  dayClassFuture = NA,
+  EdgeModelTerms,
+  EdgeModelFormula,
+  EdgeGroup = NA,
+  EdgeIntercept = c("edges"),
+  EdgeNetparam = NA,
+  EdgeExvar = NA,
+  EdgeLag = rep(1, maxLag),
+  EdgeLagMatrix = matrix(1, maxLag, length(EdgeModelTerms)),
+  regMethod = "bayesglm",
+  paramout = TRUE
+)
 }
 \arguments{
 \item{InputNetwork}{List of input networks}
@@ -62,7 +76,7 @@ VertexParameterMat: Matrix of Vertex parameters.
 }
 \description{
 Simulation engine for dynamic networks with variable number of vertices. 
-Implements exponential family based hierachical model for vertice and the edges.
+Implements exponential family based hierarchical model for vertices and the edges.
 }
 \examples{
 \dontrun{

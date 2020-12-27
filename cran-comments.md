@@ -1,6 +1,5 @@
-## Correction
-* Corrected VignetteIndexEntry
-* Added new functionality for alternate smoothing methods for experimentation.
+## Resubmission
+* Fixed missing markup in DESCRIPTION file.
 
 ## Test environments
 * local OS X install, R 3.2.3
@@ -9,13 +8,13 @@
 
 ## R CMD check results
 
-0 errors | 0 warnings | 0 notes
+0 errors | 0 warnings | 1 note
 
-* This is an update.
+* This is a new release.
 
 ## Reverse dependencies
 
-None
+This is a new release, so there are no reverse dependencies.
 
 ---
 

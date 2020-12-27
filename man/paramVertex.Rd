@@ -4,13 +4,26 @@
 \alias{paramVertex}
 \title{Parameter estimation for Vertex dynamics}
 \usage{
-paramVertex(InputNetwork, VertexStatsvec = rep(1, nvertexstats), maxLag,
-  VertexLag = rep(1, maxLag), VertexLagMatrix = matrix(1, maxLag,
-  length(VertexStatsvec)), VertexModelGroup = NA, VertexAttLag = rep(1,
-  maxLag), dayClass = NA, EdgeModelTerms, EdgeModelFormula, EdgeGroup,
-  EdgeIntercept = c("edges"), EdgeNetparam = NA, EdgeExvar = NA,
-  EdgeLag = rep(1, maxLag), EdgeLagMatrix = matrix(1, maxLag,
-  length(EdgeModelTerms)), regMethod = "bayesglm", paramout = FALSE)
+paramVertex(
+  InputNetwork,
+  VertexStatsvec = rep(1, nvertexstats),
+  maxLag,
+  VertexLag = rep(1, maxLag),
+  VertexLagMatrix = matrix(1, maxLag, length(VertexStatsvec)),
+  VertexModelGroup = NA,
+  VertexAttLag = rep(1, maxLag),
+  dayClass = NA,
+  EdgeModelTerms,
+  EdgeModelFormula,
+  EdgeGroup,
+  EdgeIntercept = c("edges"),
+  EdgeNetparam = NA,
+  EdgeExvar = NA,
+  EdgeLag = rep(1, maxLag),
+  EdgeLagMatrix = matrix(1, maxLag, length(EdgeModelTerms)),
+  regMethod = "bayesglm",
+  paramout = FALSE
+)
 }
 \arguments{
 \item{InputNetwork}{list of networks.}
@@ -27,7 +40,7 @@ paramVertex(InputNetwork, VertexStatsvec = rep(1, nvertexstats), maxLag,
 
 \item{VertexAttLag}{Lag vector for vertex group terms. Of length maxLag.}
 
-\item{dayClass}{Any network level present time attribute vector. Here used to indicate week/weeked as 0/1.}
+\item{dayClass}{Any network level present time attribute vector. Here used to indicate week/weekend as 0/1.}
 
 \item{EdgeModelTerms}{Model terms in edge model.}
 
@@ -37,7 +50,7 @@ paramVertex(InputNetwork, VertexStatsvec = rep(1, nvertexstats), maxLag,
 
 \item{EdgeIntercept}{Intercept for edge model.}
 
-\item{EdgeNetparam}{Network level parameter for edge model (currentyly only supported parameter is current network size).}
+\item{EdgeNetparam}{Network level parameter for edge model (currently only supported parameter is current network size).}
 
 \item{EdgeExvar}{Extraneous variable for edge model.}
 

@@ -4,7 +4,9 @@
 \name{beach}
 \alias{beach}
 \title{Dynamically changing network of inter personal communication among the visitors of a beach in southern California.}
-\format{A list with 31 elements, each element represent one observation in time. Each element is a network of varying size.}
+\format{
+A list with 31 elements, each element represent one observation in time. Each element is a network of varying size.
+}
 \source{
 Almquist, Z. W. and C. T. Butts (2014b). Logistic network regression for scalable analysis of networks with joint edge/ vertex dynamics. Sociological Methodology 44 (1), 1-33.
 }
